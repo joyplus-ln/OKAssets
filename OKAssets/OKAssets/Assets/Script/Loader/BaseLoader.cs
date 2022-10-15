@@ -6,22 +6,20 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public abstract class GBaseLoader : ITicker
+    public abstract class BaseLoader : ITicker
     {
-        public delegate void OnLoadProgressDelegate(GBaseLoader loader);
+        public delegate void OnLoadProgressDelegate(BaseLoader loader);
 
-        public delegate void OnLoadCompleteDelegate(GBaseLoader loader);
+        public delegate void OnLoadCompleteDelegate(BaseLoader loader);
 
-        public delegate void OnLoadErrorDelegate(GBaseLoader loader);
+        public delegate void OnLoadErrorDelegate(BaseLoader loader);
 
         public OnLoadProgressDelegate OnLoadProgress;
         public OnLoadCompleteDelegate OnLoadComplete;
         public OnLoadErrorDelegate OnLoadError;
 
         protected string _url;
-
-        //备用链接，当第一个下载失败后继续尝试第二个
-        protected string[] _fallbackUrl = new string[0];
+        
         protected string _name;
         protected float _progress;
         protected ulong _downLoadBytes;
@@ -42,12 +40,7 @@ namespace OKAssets
             get { return _url; }
             set { _url = value; }
         }
-
-        public string[] FallbackUrl
-        {
-            get { return _fallbackUrl; }
-            set { _fallbackUrl = value; }
-        }
+        
 
         public string Name
         {
@@ -142,7 +135,6 @@ namespace OKAssets
             _downLoadBytes = 0;
             _startLoadStamp = Time.time;
             _isLoading = true;
-            TickRunner.GetInstance().AddTicker(this);
         }
 
         public virtual void Close()
@@ -154,7 +146,6 @@ namespace OKAssets
 
             _isLoading = false;
             _loadTime = Time.time - _startLoadStamp;
-            TickRunner.GetInstance().RemoveTicker(this);
         }
 
         public virtual void Dispose()
@@ -165,9 +156,6 @@ namespace OKAssets
             OnLoadError = null;
             _assetBundle = null;
         }
-
-        public abstract void OnTick();
-        public abstract void OnLateTick();
 
         protected virtual void InvokeLoadComplete()
         {
@@ -192,5 +180,7 @@ namespace OKAssets
                 OnLoadError(this);
             }
         }
+
+        public abstract void Update();
     }
 }

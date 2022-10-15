@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GAssetBundleLoader : GBinaryLoader
+    public class AssetBundleLoader : BinaryLoader
     {
         public override AssetBundle AssetBundle
         {
@@ -38,7 +38,7 @@ namespace OKAssets
             string fileName = filepath.Substring(filepath.LastIndexOf('/') + 1);
             //Debug.Log(fileName);
             string file = null;
-            var jsModule = GResManager.GetInstance().GetJsModuleBundle();
+            var jsModule = OKResManager.GetInstance().GetJsModuleBundle();
             if (jsModule.ContainsKey(fileName))
             {
                 filepath = jsModule[fileName];

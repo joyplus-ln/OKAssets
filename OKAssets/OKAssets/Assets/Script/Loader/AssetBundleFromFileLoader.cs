@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GAssetBundleFromFileLoader : GBaseLoader
+    public class AssetBundleFromFileLoader : BaseLoader
     {
         private AssetBundleCreateRequest _createRequest;
 
@@ -76,8 +76,6 @@ namespace OKAssets
                     _startLoadStamp = Time.time;
                     _isLoading = true;
                 }
-
-                TickRunner.GetInstance().AddTicker(this);
             }
             else
             {
@@ -106,10 +104,9 @@ namespace OKAssets
             }
 
             _isLoading = false;
-            TickRunner.GetInstance().RemoveTicker(this);
         }
 
-        public override void OnTick()
+        public override void Update()
         {
             if (_createRequest == null)
             {
@@ -135,9 +132,6 @@ namespace OKAssets
             }
         }
 
-        public override void OnLateTick()
-        {
-        }
 
         protected override void InvokeLoadComplete()
         {

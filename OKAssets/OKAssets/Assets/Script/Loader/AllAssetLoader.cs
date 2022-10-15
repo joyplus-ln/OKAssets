@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace OKAssets
 {
-    public class GAllAssetLoader : GAssetLoader
+    public class AllAssetLoader : AssetLoader
     {
         public override object Content
         {
@@ -33,7 +33,6 @@ namespace OKAssets
                     _isLoading = true;
                 }
 
-                TickRunner.GetInstance().AddTicker(this);
             }
         }
 

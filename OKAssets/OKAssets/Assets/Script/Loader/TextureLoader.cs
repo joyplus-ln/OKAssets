@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GTextureLoader : GBinaryLoader
+    public class TextureLoader : BinaryLoader
     {
         public Texture2D texture;
 

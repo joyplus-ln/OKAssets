@@ -136,6 +136,22 @@ namespace OKAssets
             get { return Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork; }
         }
 
+        /**
+         * 是否是Android 平台
+         */
+        public static bool IsAndroid()
+        {
+            return Application.platform == RuntimePlatform.Android;
+        }
+
+        /**
+         * 是否是Ios平台
+         */
+        public static bool IsIos()
+        {
+            return Application.platform == RuntimePlatform.IPhonePlayer;
+        }
+        
         /// <summary>
         /// 应用程序内容路径
         /// </summary>

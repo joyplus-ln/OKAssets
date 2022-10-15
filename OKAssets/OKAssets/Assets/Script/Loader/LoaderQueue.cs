@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace OKAssets
 {
-    public class GLoaderQueue
+    public class LoaderQueue
     {
         public int maxConnection = 6;
-        protected Queue<GBaseLoader> _queue;
-        protected List<GBaseLoader> _loadingList;
+        protected Queue<BaseLoader> _queue;
+        protected List<BaseLoader> _loadingList;
         protected int _currentLoadedCount;
         protected int _currentBatchLoaderCount;
         protected int _currentBatchLoadCompleteCount;
@@ -20,20 +20,20 @@ namespace OKAssets
         private ulong _finlishedLoadByteSize = 0;
         protected bool _autoDispose = true;
 
-        public delegate void OnLoadCompleteDelegate(GLoaderQueue queue);
+        public delegate void OnLoadCompleteDelegate(LoaderQueue queue);
 
-        public delegate void OnLoadProgressDelegate(GLoaderQueue queue);
+        public delegate void OnLoadProgressDelegate(LoaderQueue queue);
 
-        public delegate void OnLoadErrorDelegate(GLoaderQueue queue);
+        public delegate void OnLoadErrorDelegate(LoaderQueue queue);
 
         public OnLoadCompleteDelegate OnLoadComplete;
         public OnLoadProgressDelegate OnLoadProgress;
         public OnLoadErrorDelegate OnLoadError;
 
-        public GLoaderQueue()
+        public LoaderQueue()
         {
-            _queue = new Queue<GBaseLoader>();
-            _loadingList = new List<GBaseLoader>();
+            _queue = new Queue<BaseLoader>();
+            _loadingList = new List<BaseLoader>();
             _currentLoadedCount = 0;
             _currentBatchLoaderCount = 0;
             _currentBatchLoadCompleteCount = 0;
@@ -64,13 +64,13 @@ namespace OKAssets
             get { return _totalLoadCount; }
         }
 
-        public void AddLoader(GBaseLoader loader)
+        public void AddLoader(BaseLoader loader)
         {
             _queue.Enqueue(loader);
             _totalLoadCount = _queue.Count;
         }
 
-        public void AddLoaderAndLoad(GBaseLoader loader)
+        public void AddLoaderAndLoad(BaseLoader loader)
         {
             AddLoader(loader);
             Load();
@@ -94,7 +94,7 @@ namespace OKAssets
 
             while (nextLoaderCount > 0)
             {
-                GBaseLoader loader = _queue.Dequeue();
+                BaseLoader loader = _queue.Dequeue();
                 _loadingList.Add(loader);
 
                 LoadItem(loader);
@@ -102,7 +102,7 @@ namespace OKAssets
             }
         }
 
-        private void LoadItem(GBaseLoader loader)
+        private void LoadItem(BaseLoader loader)
         {
             if (loader == null)
             {
@@ -120,7 +120,7 @@ namespace OKAssets
             loader.Load();
         }
 
-        protected void OnLoadItemComplete(GBaseLoader loader)
+        protected void OnLoadItemComplete(BaseLoader loader)
         {
             _loadingList.Remove(loader);
             ++_currentBatchLoadCompleteCount;
@@ -130,7 +130,7 @@ namespace OKAssets
             CheckCurrentBatchStatus();
         }
 
-        protected void OnLoadItemError(GBaseLoader loader)
+        protected void OnLoadItemError(BaseLoader loader)
         {
             _loadingList.Remove(loader);
             ++_currentBatchLoadCompleteCount;
@@ -138,7 +138,7 @@ namespace OKAssets
             CheckCurrentBatchStatus();
         }
 
-        protected void OnLoadItemProgress(GBaseLoader loader)
+        protected void OnLoadItemProgress(BaseLoader loader)
         {
             ExecuteProgressHandler();
         }
@@ -192,7 +192,7 @@ namespace OKAssets
             {
                 for (int i = 0; i < _loadingList.Count; i++)
                 {
-                    GBaseLoader loader = _loadingList[i];
+                    BaseLoader loader = _loadingList[i];
                     loadedProgress += loader.Progress;
                     float loaderRate = loader.LoadRate;
                     if (loaderRate != 0)

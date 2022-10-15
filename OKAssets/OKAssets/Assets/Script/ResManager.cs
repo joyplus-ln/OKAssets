@@ -2,19 +2,15 @@
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using FrameWork.Gear;
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.Build.Content;
 #endif
-using UnityEngine.SceneManagement;
 using UnityEngine.U2D;
 using UnityEngine.Video;
-using Scene = UnityEngine.SceneManagement.Scene;
 
 namespace OKAssets
 {
-    public class GResManager : MonoBehaviour
+    public class OKResManager
     {
         public delegate void OnCompleteDelegate();
 
@@ -50,9 +46,7 @@ namespace OKAssets
 
         public delegate void OnLoadFontCompleteDelegate(Font font);
 
-        public const string ASSETBUNDLE_FOLDER = "AssetBundles";
-        public const string VARIANT = ".ab";
-        public const string ASSET_PATH_PREFIX = "Assets/Res/";
+
         private AssetBundleManifest assetBundleManifest;
 
         class LoadingAssetBundleRequest
@@ -70,7 +64,7 @@ namespace OKAssets
         //bundle和文件的对应表
         private Dictionary<string, string> bundleTable = new Dictionary<string, string>();
         private Dictionary<string, string> jsModule = new Dictionary<string, string>();
-        private static GResManager _instance;
+        private static OKResManager _instance;
 
         class AppConfigJSONData
         {
@@ -82,11 +76,11 @@ namespace OKAssets
         private AppConfigJSONData appConfigData;
         private bool initialized = false;
 
-        public static GResManager GetInstance()
+        public static OKResManager GetInstance()
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<GResManager>();
+                _instance = new OKResManager();
             }
 
             return _instance;
@@ -150,9 +144,9 @@ namespace OKAssets
 
         public void InitAppConfigJSON(OnCompleteDelegate onComplete)
         {
-            GTextLoader loader = new GTextLoader();
-            loader.Url = GFileManager.GetInstance().GetAppConfigJSONPath();
-            loader.OnLoadComplete = delegate(GBaseLoader l)
+            TextLoader loader = new TextLoader();
+            loader.Url = OKFileManager.GetInstance().GetAppConfigJSONPath();
+            loader.OnLoadComplete = delegate(BaseLoader l)
             {
                 string json = loader.Text;
                 if (!string.IsNullOrEmpty(json))
@@ -169,7 +163,7 @@ namespace OKAssets
                     onComplete();
                 }
             };
-            loader.OnLoadError = delegate(GBaseLoader l)
+            loader.OnLoadError = delegate(BaseLoader l)
             {
                 appConfigData = new AppConfigJSONData();
                 if (onComplete != null)
@@ -262,11 +256,11 @@ namespace OKAssets
             loadingBundleRequests.Add(assetBundleName, requests);
             loadingAssetBundleNames.Add(assetBundleName);
             //开始加载
-            GBaseLoader bundleLoader = GetAssetBundleLoader(assetBundleName);
+            BaseLoader bundleLoader = GetAssetBundleLoader(assetBundleName);
             bundleLoader.Url = GetAssetBundlePath(assetBundleName);
             bundleLoader.Name = assetBundleName;
             bundleLoader.IsAsync = true;
-            bundleLoader.OnLoadComplete += delegate(GBaseLoader l)
+            bundleLoader.OnLoadComplete += delegate(BaseLoader l)
             {
                 string curLoadedAssetBundleName = l.Name;
                 loadedAssetBundles.TryGetValue(curLoadedAssetBundleName, out bundle);
@@ -274,8 +268,8 @@ namespace OKAssets
                 {
                     //添加到已经加载的列表中
                     loadedAssetBundles.Add(curLoadedAssetBundleName, new LoadedAssetBundle(l.AssetBundle, 0));
-                    GFileManager.GetInstance()
-                        .WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, l as GAssetBundleLoader);
+                    OKFileManager.GetInstance()
+                        .WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, l as AssetBundleLoader);
                 }
             };
             bundleLoader.Load();
@@ -406,7 +400,7 @@ namespace OKAssets
 
             //先加载依赖的内容 同步加载
             string[] deps = GetDependencies(name);
-            GBaseLoader depLoader;
+            BaseLoader depLoader;
             for (int i = 0; i < deps.Length; i++)
             {
                 string dep = deps[i];
@@ -424,8 +418,8 @@ namespace OKAssets
                     depLoader.AutoDispose = false;
                     depLoader.Load();
                     loadedAssetBundles.Add(depLoader.Name, new LoadedAssetBundle(depLoader.AssetBundle, 1));
-                    GFileManager.GetInstance()
-                        .WriteBundleToStorageAndUpdateBundleInfo(dep, depLoader as GAssetBundleLoader);
+                    OKFileManager.GetInstance()
+                        .WriteBundleToStorageAndUpdateBundleInfo(dep, depLoader as AssetBundleLoader);
                     depLoader.Dispose();
                 }
             }
@@ -438,7 +432,7 @@ namespace OKAssets
             }
             else
             {
-                GBaseLoader loader = GetAssetBundleLoader(name);
+                BaseLoader loader = GetAssetBundleLoader(name);
                 loader.Url = GetAssetBundlePath(name);
                 loader.Name = name;
                 loader.IsAsync = false;
@@ -446,7 +440,7 @@ namespace OKAssets
                 loader.Load();
                 AssetBundle asset = loader.AssetBundle;
                 loadedAssetBundles.Add(name, new LoadedAssetBundle(asset, 1));
-                GFileManager.GetInstance().WriteBundleToStorageAndUpdateBundleInfo(name, loader as GAssetBundleLoader);
+                OKFileManager.GetInstance().WriteBundleToStorageAndUpdateBundleInfo(name, loader as AssetBundleLoader);
                 loader.Dispose();
                 return asset;
             }
@@ -520,24 +514,22 @@ namespace OKAssets
         public void LoadAssetAsync(string assetPath, OnLoadAssetCompleteDelegate onLoadItemComplete = null,
             bool autoLoadDependencies = true)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
-                    AssetDatabase.LoadMainAssetAtPath(string.Concat(ASSET_PATH_PREFIX, assetPath));
+                    AssetDatabase.LoadMainAssetAtPath(string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 if (target != null)
                 {
-                    EnterFrameTimer.SetTimeOut(1, delegate()
+                    if (onLoadItemComplete != null)
                     {
-                        if (onLoadItemComplete != null)
-                        {
-                            onLoadItemComplete(target);
-                        }
-                    });
+                        onLoadItemComplete(target);
+                    }
+
                     return;
                 }
 
-                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(ASSET_PATH_PREFIX, assetPath));
+                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 return;
 #endif
             }
@@ -555,10 +547,10 @@ namespace OKAssets
                     LoadedAssetBundle loadedBundle = null;
                     if (loadedAssetBundles.TryGetValue(abName, out loadedBundle))
                     {
-                        GAssetLoader loader = new GAssetLoader();
+                        AssetLoader loader = new AssetLoader();
                         loader.assetBundle = loadedBundle.assetBundle;
                         loader.assetName = assetName;
-                        loader.OnLoadComplete += delegate(GBaseLoader l)
+                        loader.OnLoadComplete += delegate(BaseLoader l)
                         {
                             if (onLoadItemComplete != null)
                             {
@@ -575,17 +567,17 @@ namespace OKAssets
 
         public Object LoadAsset(string assetPath, bool autoLoadDependencies = true)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
-                    AssetDatabase.LoadMainAssetAtPath(string.Concat(ASSET_PATH_PREFIX, assetPath));
+                    AssetDatabase.LoadMainAssetAtPath(string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 if (target != null)
                 {
                     return target;
                 }
 
-                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(ASSET_PATH_PREFIX, assetPath));
+                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 return null;
 #else
 			return null;
@@ -606,7 +598,7 @@ namespace OKAssets
                     return null;
                 }
 
-                GAssetLoader loader = new GAssetLoader();
+                AssetLoader loader = new AssetLoader();
                 loader.isAsync = false;
                 loader.assetBundle = ab;
                 loader.assetName = assetName;
@@ -618,12 +610,12 @@ namespace OKAssets
 
         public void LoadScene(string assetPath, bool autoLoadDependencies = true)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
-                    AssetDatabase.LoadMainAssetAtPath(string.Concat(ASSET_PATH_PREFIX, assetPath));
-                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(ASSET_PATH_PREFIX, assetPath));
+                    AssetDatabase.LoadMainAssetAtPath(string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
+                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
 #else
 #endif
             }
@@ -642,24 +634,22 @@ namespace OKAssets
         public void LoadAllAssetAsync(string assetPath, OnLoadAllAssetCompleteDelegate onLoadItemComplete = null,
             bool autoLoadDependencies = true)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
 #if UNITY_EDITOR
                 UnityEngine.Object[] targets =
-                    AssetDatabase.LoadAllAssetsAtPath(string.Concat(ASSET_PATH_PREFIX, assetPath));
+                    AssetDatabase.LoadAllAssetsAtPath(string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 if (targets != null)
                 {
-                    EnterFrameTimer.SetTimeOut(1, delegate()
+                    if (onLoadItemComplete != null)
                     {
-                        if (onLoadItemComplete != null)
-                        {
-                            onLoadItemComplete(targets);
-                        }
-                    });
+                        onLoadItemComplete(targets);
+                    }
+
                     return;
                 }
 
-                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(ASSET_PATH_PREFIX, assetPath));
+                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 return;
 #endif
             }
@@ -678,9 +668,9 @@ namespace OKAssets
                     LoadedAssetBundle loadedBundle = null;
                     if (loadedAssetBundles.TryGetValue(abName, out loadedBundle))
                     {
-                        GAllAssetLoader loader = new GAllAssetLoader();
+                        AllAssetLoader loader = new AllAssetLoader();
                         loader.assetBundle = loadedBundle.assetBundle;
-                        loader.OnLoadComplete += delegate(GBaseLoader l)
+                        loader.OnLoadComplete += delegate(BaseLoader l)
                         {
                             if (onLoadItemComplete != null)
                             {
@@ -697,17 +687,17 @@ namespace OKAssets
 
         public Object[] LoadAllAsset(string assetPath, bool autoLoadDependencies = true)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
 #if UNITY_EDITOR
                 UnityEngine.Object[] targets =
-                    AssetDatabase.LoadAllAssetsAtPath(string.Concat(ASSET_PATH_PREFIX, assetPath));
+                    AssetDatabase.LoadAllAssetsAtPath(string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 if (targets != null)
                 {
                     return targets;
                 }
 
-                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(ASSET_PATH_PREFIX, assetPath));
+                Debug.LogWarning("资源无法通过编辑器模式加载:" + string.Concat(OKAssetsConst.ASSET_PATH_PREFIX, assetPath));
                 return null;
 #else
 			return null;
@@ -729,7 +719,7 @@ namespace OKAssets
                     return null;
                 }
 
-                GAllAssetLoader loader = new GAllAssetLoader();
+                AllAssetLoader loader = new AllAssetLoader();
                 loader.isAsync = false;
                 loader.assetBundle = ab;
                 UnityEngine.Object[] objArray = loader.GetAllAssets<UnityEngine.Object>();
@@ -1123,7 +1113,7 @@ namespace OKAssets
                 return null;
             }
 
-            assetBundleName += VARIANT;
+            assetBundleName += OKAssetsConst.VARIANT;
 
             string[] dependencies = null;
             //判断从依赖缓存中取出依赖列表
@@ -1132,7 +1122,7 @@ namespace OKAssets
                 dependencies = assetBundleManifest.GetAllDependencies(assetBundleName);
                 for (int i = 0; i < dependencies.Length; i++)
                 {
-                    dependencies[i] = dependencies[i].Replace(VARIANT, "");
+                    dependencies[i] = dependencies[i].Replace(OKAssetsConst.VARIANT, "");
                 }
 
                 dependenciesCache.Add(assetBundleName, dependencies);
@@ -1143,12 +1133,13 @@ namespace OKAssets
 
         public string GetAssetBundleStreamingAssetsPath()
         {
-            return Application.streamingAssetsPath + "/" + ASSETBUNDLE_FOLDER + "/" + PlatformUtil.GetPlatformName();
+            return Application.streamingAssetsPath + "/" + OKAssetsConst.ASSETBUNDLE_FOLDER + "/" +
+                   Util.GetPlatformName();
         }
 
         public string GetAssetBundleStoragePath()
         {
-            if (PlatformUtil.IsWindowsPlayer())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
                 return Util.DataPath;
             }
@@ -1158,13 +1149,13 @@ namespace OKAssets
 
         public string GetDefaultAssetBundlesCDNPath()
         {
-            if (ApplicationKernel.isDebugEnvironment)
+            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
             {
-                return GetFilePath(appConfigData.hot_update_cdn_debug[0], "debug");
+                return GetFilePath(appConfigData.hot_update_cdn_debug[0], OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
             }
             else
             {
-                return GetFilePath(appConfigData.hot_update_cdn_release[0], "release");
+                return GetFilePath(appConfigData.hot_update_cdn_release[0], OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
             }
         }
 
@@ -1192,7 +1183,7 @@ namespace OKAssets
 #elif UNITY_ANDROID
             platform = "Android";
 #endif
-            if (ApplicationKernel.isDebugEnvironment)
+            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
             {
                 string[] urls = new string[appConfigData.hot_update_cdn_debug.Length];
                 for (int i = 0; i < appConfigData.hot_update_cdn_debug.Length; i++)
@@ -1214,21 +1205,21 @@ namespace OKAssets
             }
         }
 
-        public GBaseLoader GetAssetBundleLoader(string assetBundleName)
+        public BaseLoader GetAssetBundleLoader(string assetBundleName)
         {
-            assetBundleName += VARIANT;
-            GFileBundleInfo bundleInfo = GFileManager.GetInstance().GetBundleInfo(assetBundleName);
+            assetBundleName += OKAssetsConst.VARIANT;
+            BundleInfo bundleInfo = OKFileManager.GetInstance().GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.CDN)
                 {
-                    return new GAssetBundleLoader();
+                    return new AssetBundleLoader();
                 }
 
-                return new GAssetBundleFromFileLoader();
+                return new AssetBundleFromFileLoader();
             }
 
-            return new GAssetBundleFromFileLoader();
+            return new AssetBundleFromFileLoader();
         }
 
         public string GetAssetBundlePath(string assetBundleName, bool autoCompletionExts = true)
@@ -1236,9 +1227,9 @@ namespace OKAssets
             string s = "";
             string bundleName = assetBundleName;
             if (autoCompletionExts)
-                assetBundleName += VARIANT;
+                assetBundleName += OKAssetsConst.VARIANT;
 
-            GFileBundleInfo bundleInfo = GFileManager.GetInstance().GetBundleInfo(assetBundleName);
+            BundleInfo bundleInfo = OKFileManager.GetInstance().GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)
@@ -1255,9 +1246,9 @@ namespace OKAssets
                 }
 
                 bundleName = bundleInfo.nameWithHash;
-                if (!bundleName.Contains(VARIANT) && autoCompletionExts)
+                if (!bundleName.Contains(OKAssetsConst.VARIANT) && autoCompletionExts)
                 {
-                    bundleName += VARIANT;
+                    bundleName += OKAssetsConst.VARIANT;
                 }
             }
             else

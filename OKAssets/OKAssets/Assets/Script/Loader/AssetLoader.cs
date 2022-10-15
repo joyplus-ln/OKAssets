@@ -3,7 +3,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GAssetLoader : GBaseLoader
+    public class AssetLoader : BaseLoader
     {
         protected AssetBundleRequest _bundleRequest;
         public AssetBundle assetBundle;
@@ -77,7 +77,6 @@ namespace OKAssets
                     _isLoading = true;
                 }
 
-                TickRunner.GetInstance().AddTicker(this);
             }
         }
 
@@ -89,10 +88,9 @@ namespace OKAssets
             }
 
             _isLoading = false;
-            TickRunner.GetInstance().RemoveTicker(this);
         }
 
-        public override void OnTick()
+        public override void Update()
         {
             if (_bundleRequest == null)
             {
@@ -116,10 +114,6 @@ namespace OKAssets
                     Dispose();
                 }
             }
-        }
-
-        public override void OnLateTick()
-        {
         }
 
         public override void Dispose()

@@ -3,7 +3,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GTextLoader : GBinaryLoader
+    public class TextLoader : BinaryLoader
     {
         private string _text;
 

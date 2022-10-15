@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class GBinaryLoader : GBaseLoader
+    public class BinaryLoader : BaseLoader
     {
         protected UnityWebRequest _request;
 
@@ -203,28 +203,6 @@ namespace OKAssets
             base.Load();
         }
 
-        private void ReLoad(string fallbackUrl)
-        {
-            _url = fallbackUrl;
-            if (_request != null)
-            {
-                UnityWebRequest _oldRequest = _request;
-                if (_oldRequest.method.Equals(UnityWebRequest.kHttpVerbPOST))
-                {
-                    _request = UnityWebRequest.Post(_url, UnityWebRequest.kHttpVerbPOST);
-                    _request.uploadHandler = (UploadHandler)new UploadHandlerRaw(_oldRequest.uploadHandler.data);
-                    _request.SetRequestHeader("Content-Type", "application/json");
-                }
-                else if (_oldRequest.method.Equals(UnityWebRequest.kHttpVerbGET))
-                {
-                    _request = UnityWebRequest.Get(_url);
-                }
-
-                _request.timeout = _oldRequest.timeout;
-                _oldRequest.Dispose();
-                Load();
-            }
-        }
 
         public override void Close()
         {
@@ -236,7 +214,7 @@ namespace OKAssets
             base.Close();
         }
 
-        public override void OnTick()
+        public override void Update()
         {
             if (_request == null)
             {
@@ -275,9 +253,6 @@ namespace OKAssets
             }
         }
 
-        public override void OnLateTick()
-        {
-        }
 
         public override void Dispose()
         {
@@ -296,22 +271,6 @@ namespace OKAssets
             if ((_request.isHttpError || _request.isNetworkError))
             {
                 Debug.Log(_url + "-" + "error ");
-                if (_fallbackUrl.Length == 0 || _url == _fallbackUrl[_fallbackUrl.Length - 1])
-                {
-                    return true;
-                }
-                else
-                {
-                    for (int i = 0; i < _fallbackUrl.Length; i++)
-                    {
-                        if (_fallbackUrl[i] == _url)
-                        {
-                            Debug.Log("download change url:" + _fallbackUrl[i + 1]);
-                            ReLoad(_fallbackUrl[i + 1]);
-                            break;
-                        }
-                    }
-                }
             }
 
             return false;

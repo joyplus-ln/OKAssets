@@ -9,38 +9,13 @@ using UnityEditor;
 
 namespace OKAssets
 {
-    public enum BundleStorageLocation
+
+
+    public class OKFileManager
     {
-        NONE = 0,
-        STREAMINGASSETS = 1, //存放在包体的StreamingAssets文件夹里，Application.streamingAssetsPath
-        STORAGE = 2, //存放在本地存储中，Application.persistentDataPath
-        CDN = 3, //保存在CDN上的
-    }
+        public delegate void OnLoadQueueProgressDelegate(LoaderQueue queue);
 
-    public enum BundleLocation
-    {
-        Local = 0, //保存在本地的
-        OnLine = 1, //保存在线上的
-    }
-
-    
-
-    struct GetNewVersion //用于通过POST请求线上的版本号
-    {
-        public string AppVersion;
-    }
-
-    struct DataResponse
-    {
-        public int code;
-        public string data;
-    }
-
-    public class GFileManager : ITicker
-    {
-        public delegate void OnLoadQueueProgressDelegate(GLoaderQueue queue);
-
-        public delegate void OnLoadQueueCompleteDelegate(GLoaderQueue queue);
+        public delegate void OnLoadQueueCompleteDelegate(LoaderQueue queue);
 
         public delegate void OnItemCompleteDelegate();
 
@@ -58,7 +33,7 @@ namespace OKAssets
         //CDN上的assetbundle信息
         private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
         private bool _initalizedCDNBundlesInfo = false;
-        private static GFileManager _instance;
+        private static OKFileManager _instance;
         private bool _writeBundleInfoDirty = false;
 
         private float _writeBundleInfoTime = 0f;
@@ -69,11 +44,11 @@ namespace OKAssets
         //包体里的version
         public string storageBuildVersion = "";
 
-        public static GFileManager GetInstance()
+        public static OKFileManager GetInstance()
         {
             if (_instance == null)
             {
-                _instance = new GFileManager();
+                _instance = new OKFileManager();
             }
 
             return _instance;
@@ -100,7 +75,7 @@ namespace OKAssets
 
         public string GetBundlesInfoConfigStreamingAssetsPath()
         {
-            return Path.Combine(GResManager.GetInstance().GetAssetBundleStreamingAssetsPath(), FILENAME_FILES_TXT);
+            return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(), FILENAME_FILES_TXT);
         }
 
         public string GetBundlesInfoConfigPersistentDataPath()
@@ -110,7 +85,7 @@ namespace OKAssets
 
         public string GetBuildVersionConfigStreamingAssetsPath()
         {
-            return Path.Combine(GResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
+            return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
                 FILENAME_BUILDVERSION_TXT);
         }
 
@@ -121,7 +96,7 @@ namespace OKAssets
 
         public string GetBundlesTableConfigStreamingAssetsPath()
         {
-            return Path.Combine(GResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
+            return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
                 FILENAME_BUNDLESTABLE_TXT);
         }
 
@@ -138,7 +113,7 @@ namespace OKAssets
         public void LoadBundlesInfo()
         {
             //解析files.txt获取fileInfo
-            if (!PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
             {
                 string[] files = File.ReadAllLines(GetBundlesInfoConfigPersistentDataPath());
                 for (int i = 0; i < files.Length; i++)
@@ -160,8 +135,6 @@ namespace OKAssets
                         _storageBundlesInfo[bundleInfo.name] = bundleInfo;
                     }
                 }
-
-                TickRunner.GetInstance().AddTicker(this);
             }
         }
 
@@ -203,9 +176,9 @@ namespace OKAssets
                 return;
             }
 
-            GTextLoader cdnFilesTxtLoader = new GTextLoader();
+            TextLoader cdnFilesTxtLoader = new TextLoader();
             cdnFilesTxtLoader.Url = cdnFilesURL;
-            cdnFilesTxtLoader.OnLoadComplete = delegate(GBaseLoader l)
+            cdnFilesTxtLoader.OnLoadComplete = delegate(BaseLoader l)
             {
                 string cdnFilesStr = cdnFilesTxtLoader.Text;
                 string[] cdnFiles = cdnFilesStr.Split('\n');
@@ -238,27 +211,26 @@ namespace OKAssets
             //检查版本号
             Version cdnVersion = null;
             Version storageVersion = null;
-            GLoaderQueue loaderQueue = new GLoaderQueue();
-            GTextLoader cdnBuildVersionLoader = new GTextLoader();
+            LoaderQueue loaderQueue = new LoaderQueue();
+            TextLoader cdnBuildVersionLoader = new TextLoader();
             cdnBuildVersionLoader.TimeOut = 2;
             cdnBuildVersionLoader.Url = cdnBuildVersionURL;
-            cdnBuildVersionLoader.OnLoadComplete = delegate(GBaseLoader loader)
+            cdnBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
             {
                 cdnVersion = new Version(cdnBuildVersionLoader.Text);
                 cdnBuildVersion = cdnVersion.ToString();
-                ApplicationKernel.onlineBuildVersion = cdnBuildVersion;
             };
             loaderQueue.AddLoader(cdnBuildVersionLoader);
 
-            GTextLoader storageBuildVersionLoader = new GTextLoader();
-            storageBuildVersionLoader.Url = GFileManager.GetInstance().GetBuildVersionConfigPersistentDataPath();
-            storageBuildVersionLoader.OnLoadComplete = delegate(GBaseLoader loader)
+            TextLoader storageBuildVersionLoader = new TextLoader();
+            storageBuildVersionLoader.Url = OKFileManager.GetInstance().GetBuildVersionConfigPersistentDataPath();
+            storageBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
             {
                 storageVersion = new Version(storageBuildVersionLoader.Text);
                 storageBuildVersion = storageVersion.ToString();
             };
             loaderQueue.AddLoader(storageBuildVersionLoader);
-            loaderQueue.OnLoadComplete = delegate(GLoaderQueue queue)
+            loaderQueue.OnLoadComplete = delegate(LoaderQueue queue)
             {
                 bool needDownloadApp = false;
                 bool needDownloadBundle = false;
@@ -275,7 +247,7 @@ namespace OKAssets
                     onCompareResult(needDownloadApp);
                 }
             };
-            loaderQueue.OnLoadError = delegate(GLoaderQueue queue)
+            loaderQueue.OnLoadError = delegate(LoaderQueue queue)
             {
                 if (onError != null)
                 {
@@ -289,9 +261,9 @@ namespace OKAssets
         {
             List<BundleInfo> diffFilesInfoList = new List<BundleInfo>();
             long totalByteSize = 0;
-            GTextLoader cdnFilesTxtLoader = new GTextLoader();
+            TextLoader cdnFilesTxtLoader = new TextLoader();
             cdnFilesTxtLoader.Url = cdnFilesURL;
-            cdnFilesTxtLoader.OnLoadComplete = delegate(GBaseLoader l)
+            cdnFilesTxtLoader.OnLoadComplete = delegate(BaseLoader l)
             {
                 string cdnFilesStr = cdnFilesTxtLoader.Text;
                 string[] cdnFiles = cdnFilesStr.Split('\n');
@@ -374,7 +346,7 @@ namespace OKAssets
 
                 if (onCompareResult != null)
                 {
-                    onCompareResult(diffFilesInfoList.ToArray(), (float) totalByteSize);
+                    onCompareResult(diffFilesInfoList.ToArray(), (float)totalByteSize);
                 }
             };
             cdnFilesTxtLoader.Load();
@@ -383,7 +355,7 @@ namespace OKAssets
         public void DownloadFilesByBundleInfo(string[] prefixURL, BundleInfo[] downloadInfoArray,
             OnLoadQueueProgressDelegate onProgress, OnLoadQueueCompleteDelegate onComplete)
         {
-            GLoaderQueue queue = new GLoaderQueue();
+            LoaderQueue queue = new LoaderQueue();
             for (int i = 0; i < downloadInfoArray.Length; i++)
             {
                 BundleInfo info = downloadInfoArray[i];
@@ -394,31 +366,30 @@ namespace OKAssets
                     fileURLs[j] = Path.Combine(prefixURL[j], info.nameWithHash);
                 }
 
-                GBinaryLoader loader = new GBinaryLoader();
+                BinaryLoader loader = new BinaryLoader();
                 loader.Name = info.name;
                 loader.Url = fileURL;
-                loader.FallbackUrl = fileURLs;
-                loader.OnLoadComplete = delegate(GBaseLoader l)
+                loader.OnLoadComplete = delegate(BaseLoader l)
                 {
                     BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
                     finishInfo.location = BundleStorageLocation.STORAGE;
                     UpdateStorageBundleInfo(finishInfo);
                     string path = Path.Combine(Util.DataPath, finishInfo.nameWithHash);
                     if (File.Exists(path)) File.Delete(path);
-                    File.WriteAllBytes(path, (byte[]) l.Content);
+                    File.WriteAllBytes(path, (byte[])l.Content);
                     SetWriteBundleInfoDirty();
                 };
                 queue.AddLoader(loader);
             }
 
-            queue.OnLoadProgress += delegate(GLoaderQueue q)
+            queue.OnLoadProgress += delegate(LoaderQueue q)
             {
                 if (onProgress != null)
                 {
                     onProgress(q);
                 }
             };
-            queue.OnLoadComplete = delegate(GLoaderQueue q)
+            queue.OnLoadComplete = delegate(LoaderQueue q)
             {
                 WriteStorageBundlesInfoToFilesTxt();
                 if (onComplete != null)
@@ -437,10 +408,10 @@ namespace OKAssets
         /// <param name="onComplete"></param>
         public void DownloadBundleByTag(string tag, Action<float, float, int, int> progress, Action<bool> complete)
         {
-            var prefixURL = GResManager.GetInstance().GetAssetBundlesCDNPath();
+            var prefixURL = OKResManager.GetInstance().GetAssetBundlesCDNPath();
             var downloadInfoArray = GetCDNBundlesByTags(tag).ToArray();
             float totalSize = GetSizeByTags(tag);
-            GLoaderQueue queue = new GLoaderQueue();
+            LoaderQueue queue = new LoaderQueue();
             for (int i = 0; i < downloadInfoArray.Length; i++)
             {
                 BundleInfo info = downloadInfoArray[i];
@@ -451,31 +422,30 @@ namespace OKAssets
                     fileURLs[j] = Path.Combine(prefixURL[j], info.name);
                 }
 
-                GBinaryLoader loader = new GBinaryLoader();
+                BinaryLoader loader = new BinaryLoader();
                 loader.Name = info.name;
                 loader.Url = fileURL;
-                loader.FallbackUrl = fileURLs;
-                loader.OnLoadComplete = delegate(GBaseLoader l)
+                loader.OnLoadComplete = delegate(BaseLoader l)
                 {
                     BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
                     finishInfo.location = BundleStorageLocation.STORAGE;
                     UpdateStorageBundleInfo(finishInfo);
                     string path = Path.Combine(Util.DataPath, finishInfo.name);
                     if (File.Exists(path)) File.Delete(path);
-                    File.WriteAllBytes(path, (byte[]) l.Content);
+                    File.WriteAllBytes(path, (byte[])l.Content);
                     SetWriteBundleInfoDirty();
                 };
                 queue.AddLoader(loader);
             }
 
-            queue.OnLoadProgress += delegate(GLoaderQueue q)
+            queue.OnLoadProgress += delegate(LoaderQueue q)
             {
                 if (progress != null)
                 {
                     progress.Invoke(totalSize, q.ProgressByteSize, q.TotalLoadCount, q.CurrentLoadedCount);
                 }
             };
-            queue.OnLoadComplete = delegate(GLoaderQueue q)
+            queue.OnLoadComplete = delegate(LoaderQueue q)
             {
                 WriteStorageBundlesInfoToFilesTxt();
                 if (complete != null)
@@ -616,9 +586,9 @@ namespace OKAssets
             _writeBundleInfoDirty = true;
         }
 
-        public void WriteBundleToStorageAndUpdateBundleInfo(string name, GAssetBundleLoader loader)
+        public void WriteBundleToStorageAndUpdateBundleInfo(string name, AssetBundleLoader loader)
         {
-            if (PlatformUtil.IsRunInEditor())
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
                 return;
             if (loader == null)
                 return;
@@ -636,7 +606,7 @@ namespace OKAssets
                         //本地写文件
                         string path = Path.Combine(Util.DataPath, storageBundleInfo.name);
                         if (File.Exists(path)) File.Delete(path);
-                        File.WriteAllBytes(path, (byte[]) loader.Content);
+                        File.WriteAllBytes(path, (byte[])loader.Content);
                     }
                 }
             }
@@ -658,13 +628,13 @@ namespace OKAssets
             }
 
             if (File.Exists(destFile)) File.Delete(destFile);
-            if (PlatformUtil.IsAndroidPlayer())
+            if (Util.IsAndroid())
             {
-                GBinaryLoader fileLoader = new GBinaryLoader();
+                BinaryLoader fileLoader = new BinaryLoader();
                 fileLoader.Url = sourceFilePath;
-                fileLoader.OnLoadComplete = delegate(GBaseLoader loader)
+                fileLoader.OnLoadComplete = delegate(BaseLoader loader)
                 {
-                    File.WriteAllBytes(destFile, (byte[]) loader.Content);
+                    File.WriteAllBytes(destFile, (byte[])loader.Content);
                     if (onComplete != null)
                     {
                         onComplete();
@@ -687,7 +657,7 @@ namespace OKAssets
         {
             bool isFolder = string.IsNullOrEmpty(Path.GetFileName(destFolderPath)) ? true : false;
 
-            GLoaderQueue queue = new GLoaderQueue();
+            LoaderQueue queue = new LoaderQueue();
             for (int i = 0; i < sourceFilePathArray.Length; i++)
             {
                 string sourceFilePath = sourceFilePathArray[i];
@@ -703,13 +673,13 @@ namespace OKAssets
                 }
 
                 if (File.Exists(destFile)) File.Delete(destFile);
-                if (PlatformUtil.IsAndroidPlayer())
+                if (Util.IsAndroid())
                 {
-                    GBinaryLoader fileLoader = new GBinaryLoader();
+                    BinaryLoader fileLoader = new BinaryLoader();
                     fileLoader.Url = sourceFilePath;
-                    fileLoader.OnLoadComplete = delegate(GBaseLoader loader)
+                    fileLoader.OnLoadComplete = delegate(BaseLoader loader)
                     {
-                        File.WriteAllBytes(destFile, (byte[]) loader.Content);
+                        File.WriteAllBytes(destFile, (byte[])loader.Content);
                         if (onItemComplete != null)
                         {
                             onItemComplete();
@@ -723,9 +693,9 @@ namespace OKAssets
                 }
             }
 
-            if (PlatformUtil.IsAndroidPlayer())
+            if (Util.IsAndroid())
             {
-                queue.OnLoadComplete = delegate(GLoaderQueue q)
+                queue.OnLoadComplete = delegate(LoaderQueue q)
                 {
                     if (onComplete != null)
                     {
@@ -742,7 +712,7 @@ namespace OKAssets
                 }
             }
         }
-        
+
         public BundleInfo[] GetStorageBundleInfoListBySubpackage(string tag)
         {
             List<BundleInfo> result = new List<BundleInfo>();
@@ -786,15 +756,15 @@ namespace OKAssets
 
         public void DownLoadFile(string filePath, string fileName, Action<byte[]> complete)
         {
-            GBinaryLoader fileLoader = new GBinaryLoader();
+            BinaryLoader fileLoader = new BinaryLoader();
             fileLoader.Url = filePath + "/" + fileName;
-            fileLoader.OnLoadComplete = delegate(GBaseLoader loader)
+            fileLoader.OnLoadComplete = delegate(BaseLoader loader)
             {
                 string path = Path.Combine(Util.DataPath, fileName);
-                File.WriteAllBytes(path, (byte[]) loader.Content);
+                File.WriteAllBytes(path, (byte[])loader.Content);
                 if (complete != null)
                 {
-                    complete((byte[]) loader.Content);
+                    complete((byte[])loader.Content);
                 }
             };
             fileLoader.Load();

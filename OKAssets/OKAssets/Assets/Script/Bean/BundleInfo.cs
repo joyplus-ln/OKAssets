@@ -43,7 +43,7 @@
             }
         }
 
-        public void Update(GFileBundleInfo newInfo)
+        public void Update(BundleInfo newInfo)
         {
             name = newInfo.name;
             nameWithHash = newInfo.nameWithHash;

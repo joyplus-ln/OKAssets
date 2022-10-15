@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace OKAssets
 {
-    public class GSceneLoader : GBaseLoader
+    public class SceneLoader : BaseLoader
     {
         private string _sceneName = "";
         private LoadSceneMode _loadSceneMode = LoadSceneMode.Single;
@@ -58,7 +58,7 @@ namespace OKAssets
             }
 
             _isLoading = false;
-            TickRunner.GetInstance().RemoveTicker(this);
+            
         }
 
         public override void Dispose()
@@ -83,11 +83,11 @@ namespace OKAssets
             {
                 _startLoadStamp = Time.time;
                 _isLoading = true;
-                TickRunner.GetInstance().AddTicker(this);
+                
             }
         }
 
-        public override void OnTick()
+        public override void Update()
         {
             if (_operation == null)
             {
@@ -113,8 +113,5 @@ namespace OKAssets
             }
         }
 
-        public override void OnLateTick()
-        {
-        }
     }
 }
