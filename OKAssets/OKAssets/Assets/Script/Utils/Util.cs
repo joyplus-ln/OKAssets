@@ -86,7 +86,7 @@ namespace OKAssets
 #if UNITY_EDITOR
             return GetPlatformForAssetBundles(EditorUserBuildSettings.activeBuildTarget);
 #else
-        return GetPlatformForAssetBundles(Application.platform);
+            return GetPlatformForAssetBundles(Application.platform);
 #endif
         }
 
@@ -111,6 +111,33 @@ namespace OKAssets
                 case BuildTarget.StandaloneWindows64:
                     return "Windows";
                 case BuildTarget.StandaloneOSX:
+                    return "OSX";
+                // Add more build targets for your own.
+                // If you add more targets, don't forget to add the same platforms to GetPlatformForAssetBundles(RuntimePlatform) function.
+                default:
+                    return null;
+            }
+        }
+#endif
+        
+#if !UNITY_EDITOR
+        private static string GetPlatformForAssetBundles(RuntimePlatform target)
+        {
+            switch (target)
+            {
+                case RuntimePlatform.Android:
+                    return "Android";
+#if UNITY_TVOS
+                case RuntimePlatform.tvOS:
+                    return "tvOS";
+#endif
+                case RuntimePlatform.IPhonePlayer:
+                    return "iOS";
+                case RuntimePlatform.WebGLPlayer:
+                    return "WebGL";
+                case RuntimePlatform.WindowsPlayer:
+                    return "Windows";
+                case RuntimePlatform.OSXPlayer:
                     return "OSX";
                 // Add more build targets for your own.
                 // If you add more targets, don't forget to add the same platforms to GetPlatformForAssetBundles(RuntimePlatform) function.
@@ -173,5 +200,8 @@ namespace OKAssets
 
             return path;
         }
+        
+
+        
     }
 }

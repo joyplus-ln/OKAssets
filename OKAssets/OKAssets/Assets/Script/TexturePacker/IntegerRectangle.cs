@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. *
  *
  */
-namespace DaVikingCode.RectanglePacking
+namespace OKAssets
 {
     /**
      * Class used to store rectangles values inside rectangle packer

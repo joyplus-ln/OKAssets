@@ -1,0 +1,4 @@
+buildversion.txt|buildversion.txt|10|2db30926050b83b46e8b7249fc130693|1|basic|0
+bundles_table.txt|bundles_table.txt|27|bb52aab2183240c6bad9ced7839ee01f|1|basic|0
+prefab..ab|prefab._hash545bc25e740428b66458192b1cd6f4a1.ab|43881|545bc25e740428b66458192b1cd6f4a1|1|basic|0
+Windows|Windows|1574|be164fc629f6043ea68870663771e504|1|basic|0

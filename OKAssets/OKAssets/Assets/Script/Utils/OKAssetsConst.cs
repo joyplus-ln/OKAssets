@@ -1,12 +1,30 @@
-﻿namespace OKAssets
+﻿using UnityEngine;
+
+namespace OKAssets
 {
     public class OKAssetsConst
     {
-        public static OKAssetsConfig okConfig;
+        public static OKAssetsConfig okConfig
+        {
+            get
+            {
+                return Resources.Load<OKAssetsConfig>("OKAssetsConfig");
+            }
+        }
+        public const string CONFIGNAME = "OKAssetsConfig.asset";
         public const string BundleMapFlieName = "BundleMapFile.txt";
         public const string ASSETBUNDLE_FOLDER = "AssetBundles";
         public const string VARIANT = ".ab";
         public const string ASSET_PATH_PREFIX = "Assets/Res/";
+        public const string OKAssetBundleData = "Assets/OKAssetBundleData.asset";
+        public const string OKAssetBundleTagData = "OKAssetBundleTagData.asset";
+        public const string OKAssetBundleVersionData = "OKAssetBundleVersionData.asset";
+        public const string ATLASTAG = "Atlas";
+        
+        public const string FILENAME_FILES_TXT = "bundleFiles.txt";
+        public const string FILENAME_BUILDVERSION_TXT = "buildversion.txt";
+        public const string FILENAME_BUNDLESTABLE_TXT = "bundles_table.txt";
+        public const string FILENAME_APPCONFIG_JSON = "app_config.json";
     }
 
     public enum ResLoadMode

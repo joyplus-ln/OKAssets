@@ -1,12 +1,11 @@
-﻿using DaVikingCode.RectanglePacking;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace DaVikingCode.TexturePacker
+namespace OKAssets
 {
     public class TexturePacker : MonoBehaviour
     {

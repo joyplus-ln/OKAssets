@@ -1,0 +1,1 @@
+Prefab/Cube.prefab|prefab

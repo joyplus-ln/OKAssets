@@ -1,6 +1,5 @@
-﻿namespace DaVikingCode.TexturePacker
+﻿namespace OKAssets
 {
-
     public class TextureToPack
     {
         public string file;

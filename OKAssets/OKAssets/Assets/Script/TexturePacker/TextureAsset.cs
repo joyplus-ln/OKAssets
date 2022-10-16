@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DaVikingCode.TexturePacker
+namespace OKAssets
 {
     [Serializable]
     public class TextureAssets

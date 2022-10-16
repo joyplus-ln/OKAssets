@@ -68,46 +68,43 @@ namespace OKAssets
             set { _cdnBundlesInfo = value; }
         }
 
-        public const string FILENAME_FILES_TXT = "bundleFiles.txt";
-        public const string FILENAME_BUILDVERSION_TXT = "buildversion.txt";
-        public const string FILENAME_BUNDLESTABLE_TXT = "bundles_table.txt";
-        public const string FILENAME_APPCONFIG_JSON = "app_config.json";
+
 
         public string GetBundlesInfoConfigStreamingAssetsPath()
         {
-            return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(), FILENAME_FILES_TXT);
+            return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(), OKAssetsConst.FILENAME_FILES_TXT);
         }
 
         public string GetBundlesInfoConfigPersistentDataPath()
         {
-            return Path.Combine(Util.DataPath, FILENAME_FILES_TXT);
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_FILES_TXT);
         }
 
         public string GetBuildVersionConfigStreamingAssetsPath()
         {
             return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
-                FILENAME_BUILDVERSION_TXT);
+                OKAssetsConst.FILENAME_BUILDVERSION_TXT);
         }
 
         public string GetBuildVersionConfigPersistentDataPath()
         {
-            return Path.Combine(Util.DataPath, FILENAME_BUILDVERSION_TXT);
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUILDVERSION_TXT);
         }
 
         public string GetBundlesTableConfigStreamingAssetsPath()
         {
             return Path.Combine(OKResManager.GetInstance().GetAssetBundleStreamingAssetsPath(),
-                FILENAME_BUNDLESTABLE_TXT);
+                OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
         }
 
         public string GetBundlesTableConfigPersistentDataPath()
         {
-            return Path.Combine(Util.DataPath, FILENAME_BUNDLESTABLE_TXT);
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
         }
 
         public string GetAppConfigJSONPath()
         {
-            return Path.Combine(Application.streamingAssetsPath, FILENAME_APPCONFIG_JSON);
+            return Path.Combine(Application.streamingAssetsPath, OKAssetsConst.FILENAME_APPCONFIG_JSON);
         }
 
         public void LoadBundlesInfo()

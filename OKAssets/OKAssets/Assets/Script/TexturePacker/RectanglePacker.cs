@@ -25,7 +25,7 @@
  */
 using System.Collections.Generic;
 
-namespace DaVikingCode.RectanglePacking
+namespace OKAssets
 {
 
     /**
