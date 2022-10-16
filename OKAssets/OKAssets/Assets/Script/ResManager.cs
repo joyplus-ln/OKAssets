@@ -63,7 +63,6 @@ namespace OKAssets
 
         //bundle和文件的对应表
         private Dictionary<string, string> bundleTable = new Dictionary<string, string>();
-        private Dictionary<string, string> jsModule = new Dictionary<string, string>();
         private static OKResManager _instance;
 
         class AppConfigJSONData
@@ -172,11 +171,6 @@ namespace OKAssets
                 }
             };
             loader.Load();
-        }
-
-        public Dictionary<string, string> GetJsModuleBundle()
-        {
-            return jsModule;
         }
 
         public bool GetHotUpdateEnabled()

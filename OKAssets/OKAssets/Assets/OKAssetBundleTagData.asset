@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tags:
   - basic
+  - OnLine
