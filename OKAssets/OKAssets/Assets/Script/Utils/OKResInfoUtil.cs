@@ -178,5 +178,124 @@ namespace OKAssets
 
             return bundles;
         }
+
+
+        public static Dictionary<string, string> LoadBundlesTable()
+        {
+            Dictionary<string, string> bundleTable = new Dictionary<string, string>();
+            string bundletablepath = Util.DataPath + OKAssetsConst.BundleMapFlieName;
+            //解析bundle和文件的对应表
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            {
+#if UNITY_ANDROID
+                bundletablepath = Util.DataPath + $"AssetBundles/Android/{OKAssetsConst.BundleMapFlieName}";
+#elif UNITY_IOS
+					bundletablepath = Util.DataPath + $"AssetBundles/iOS/{OKAssetsConst.BundleMapFlieName}";
+#else
+                bundletablepath = Util.DataPath + $"AssetBundles/Windows/{OKAssetsConst.BundleMapFlieName}";
+#endif
+            }
+
+            string[] files = File.ReadAllLines(bundletablepath);
+            for (int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+                string[] fs = file.Split('|');
+                if (string.IsNullOrEmpty(fs[0]))
+                    continue;
+                bundleTable[fs[0]] = fs[1];
+            }
+
+            return bundleTable;
+        }
+
+        internal static AssetBundleManifest LoadManifest()
+        {
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            {
+                return null;
+            }
+
+            string path = GetAssetBundlePath(Util.GetPlatformName(), false);
+            AssetBundle ab = AssetBundle.LoadFromFile(path);
+            AssetBundleManifest assetBundleManifest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+
+            ab.Unload(false);
+            ab = null;
+            return assetBundleManifest;
+        }
+
+        internal static string GetAssetBundlePath(string assetBundleName, bool autoCompletionExts = true)
+        {
+            string s = "";
+            string bundleName = assetBundleName;
+            if (autoCompletionExts)
+                assetBundleName += OKAssetsConst.VARIANT;
+
+            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
+            if (bundleInfo != null)
+            {
+                if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)
+                {
+                    s = Util.GetAssetBundleStreamingAssetsPath();
+                }
+                else if (bundleInfo.location == BundleStorageLocation.STORAGE)
+                {
+                    s = GetAssetBundleStoragePath();
+                }
+                else if (bundleInfo.location == BundleStorageLocation.CDN)
+                {
+                    s = GetDefaultAssetBundlesCDNPath();
+                }
+
+                bundleName = bundleInfo.nameWithHash;
+                if (!bundleName.Contains(OKAssetsConst.VARIANT) && autoCompletionExts)
+                {
+                    bundleName += OKAssetsConst.VARIANT;
+                }
+            }
+            else
+            {
+                s = Util.GetAssetBundleStreamingAssetsPath();
+            }
+
+            s = Path.Combine(s, bundleName);
+            return s;
+        }
+
+
+
+        internal static string GetAssetBundleStoragePath()
+        {
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            {
+                return Util.DataPath;
+            }
+
+            return Util.DataPath;
+        }
+
+        internal static string GetDefaultAssetBundlesCDNPath()
+        {
+            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
+            {
+                return GetFilePath(CdnUrl, OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
+            }
+            else
+            {
+                return GetFilePath(CdnUrl, OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
+            }
+        }
+
+        internal static string GetFilePath(string path, string releaseType)
+        {
+            string platform = "Windows";
+#if UNITY_IOS
+        platform = "iOS";
+#elif UNITY_ANDROID
+            platform = "Android";
+#endif
+            return path + "/" + releaseType + "/" + Application.version + "/" + platform;
+        }
     }
 }

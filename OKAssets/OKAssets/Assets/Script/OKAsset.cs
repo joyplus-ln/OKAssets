@@ -47,7 +47,7 @@ namespace OKAssets
         public delegate void OnLoadFontCompleteDelegate(Font font);
 
         private Dictionary<string, BundleInfo> _storageBundlesInfo = new Dictionary<string, BundleInfo>();
-        
+
         private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
 
         private AssetBundleManifest assetBundleManifest;
@@ -73,18 +73,12 @@ namespace OKAssets
 
         public Dictionary<string, BundleInfo> StorageBundlesInfo
         {
-            get
-            {
-                return _storageBundlesInfo;
-            }
+            get { return _storageBundlesInfo; }
         }
-        
+
         public Dictionary<string, BundleInfo> CdnBundlesInfo
         {
-            get
-            {
-                return _cdnBundlesInfo;
-            }
+            get { return _cdnBundlesInfo; }
         }
 
         public static OKAsset GetInstance()
@@ -113,52 +107,12 @@ namespace OKAssets
             loadingBundleRequests = new Dictionary<string, List<LoadingAssetBundleRequest>>();
             dependenciesCache = new Dictionary<string, string[]>();
             loadedAssetBundles = new Dictionary<string, LoadedAssetBundle>();
-            LoadBundlesTable();
-            LoadManifest();
+            bundleTable = OKResInfoUtil.LoadBundlesTable();
+            assetBundleManifest = OKResInfoUtil.LoadManifest();
             LoadAndWarmUpShaderBundle();
             initialized = true;
         }
 
-        private void LoadBundlesTable()
-        {
-            string bundletablepath = Util.DataPath + OKAssetsConst.BundleMapFlieName;
-            //解析bundle和文件的对应表
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
-            {
-#if UNITY_ANDROID
-                bundletablepath = Util.DataPath + $"AssetBundles/Android/{OKAssetsConst.BundleMapFlieName}";
-#elif UNITY_IOS
-					bundletablepath = Util.DataPath + $"AssetBundles/iOS/{OKAssetsConst.BundleMapFlieName}";
-#else
-                bundletablepath = Util.DataPath + $"AssetBundles/Windows/{OKAssetsConst.BundleMapFlieName}";
-#endif
-            }
-
-            string[] files = File.ReadAllLines(bundletablepath);
-            for (int i = 0; i < files.Length; i++)
-            {
-                string file = files[i];
-                string[] fs = file.Split('|');
-                if (string.IsNullOrEmpty(fs[0]))
-                    continue;
-                bundleTable[fs[0]] = fs[1];
-            }
-        }
-
-        private void LoadManifest()
-        {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
-            {
-                return;
-            }
-
-            string path = GetAssetBundlePath(Util.GetPlatformName(), false);
-            AssetBundle ab = AssetBundle.LoadFromFile(path);
-            assetBundleManifest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-
-            ab.Unload(false);
-            ab = null;
-        }
 
         private void LoadAndWarmUpShaderBundle()
         {
@@ -233,7 +187,7 @@ namespace OKAssets
             loadingAssetBundleNames.Add(assetBundleName);
             //开始加载
             BaseLoader bundleLoader = GetAssetBundleLoader(assetBundleName);
-            bundleLoader.Url = GetAssetBundlePath(assetBundleName);
+            bundleLoader.Url = OKResInfoUtil.GetAssetBundlePath(assetBundleName);
             bundleLoader.Name = assetBundleName;
             bundleLoader.IsAsync = true;
             bundleLoader.OnLoadComplete += delegate(BaseLoader l)
@@ -244,7 +198,8 @@ namespace OKAssets
                 {
                     //添加到已经加载的列表中
                     loadedAssetBundles.Add(curLoadedAssetBundleName, new LoadedAssetBundle(l.AssetBundle, 0));
-                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName,_storageBundlesInfo, l as AssetBundleLoader);
+                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, _storageBundlesInfo,
+                        l as AssetBundleLoader);
                 }
             };
             bundleLoader.Load();
@@ -387,13 +342,14 @@ namespace OKAssets
                 else
                 {
                     depLoader = GetAssetBundleLoader(dep);
-                    depLoader.Url = GetAssetBundlePath(dep);
+                    depLoader.Url = OKResInfoUtil.GetAssetBundlePath(dep);
                     depLoader.Name = dep;
                     depLoader.IsAsync = false;
                     depLoader.AutoDispose = false;
                     depLoader.Load();
                     loadedAssetBundles.Add(depLoader.Name, new LoadedAssetBundle(depLoader.AssetBundle, 1));
-                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(dep,_storageBundlesInfo, depLoader as AssetBundleLoader);
+                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(dep, _storageBundlesInfo,
+                        depLoader as AssetBundleLoader);
                     depLoader.Dispose();
                 }
             }
@@ -407,14 +363,15 @@ namespace OKAssets
             else
             {
                 BaseLoader loader = GetAssetBundleLoader(name);
-                loader.Url = GetAssetBundlePath(name);
+                loader.Url = OKResInfoUtil.GetAssetBundlePath(name);
                 loader.Name = name;
                 loader.IsAsync = false;
                 loader.AutoDispose = false;
                 loader.Load();
                 AssetBundle asset = loader.AssetBundle;
                 loadedAssetBundles.Add(name, new LoadedAssetBundle(asset, 1));
-                OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(name,_storageBundlesInfo, loader as AssetBundleLoader);
+                OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(name, _storageBundlesInfo,
+                    loader as AssetBundleLoader);
                 loader.Dispose();
                 return asset;
             }
@@ -1106,40 +1063,16 @@ namespace OKAssets
         }
 
 
-
-        public string GetAssetBundleStoragePath()
+        private string GetAssetBundleNameByAssetPath(string path)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            string abName;
+            if (!bundleTable.TryGetValue(path, out abName))
             {
-                return Util.DataPath;
+                Debug.LogWarning(string.Format("通过{0}查找的AssetBundle不存在", path));
             }
 
-            return Util.DataPath;
+            return abName;
         }
-
-        private string GetDefaultAssetBundlesCDNPath()
-        {
-            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
-            {
-                return GetFilePath(this.cdnUrl, OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
-            }
-            else
-            {
-                return GetFilePath(this.cdnUrl, OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
-            }
-        }
-
-        public string GetFilePath(string path, string releaseType)
-        {
-            string platform = "Windows";
-#if UNITY_IOS
-        platform = "iOS";
-#elif UNITY_ANDROID
-            platform = "Android";
-#endif
-            return path + "/" + releaseType + "/" + Application.version + "/" + platform;
-        }
-
 
 
         public BaseLoader GetAssetBundleLoader(string assetBundleName)
@@ -1159,54 +1092,6 @@ namespace OKAssets
             return new AssetBundleFromFileLoader();
         }
 
-        public string GetAssetBundlePath(string assetBundleName, bool autoCompletionExts = true)
-        {
-            string s = "";
-            string bundleName = assetBundleName;
-            if (autoCompletionExts)
-                assetBundleName += OKAssetsConst.VARIANT;
-
-            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
-            if (bundleInfo != null)
-            {
-                if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)
-                {
-                    s = Util.GetAssetBundleStreamingAssetsPath();
-                }
-                else if (bundleInfo.location == BundleStorageLocation.STORAGE)
-                {
-                    s = GetAssetBundleStoragePath();
-                }
-                else if (bundleInfo.location == BundleStorageLocation.CDN)
-                {
-                    s = GetDefaultAssetBundlesCDNPath();
-                }
-
-                bundleName = bundleInfo.nameWithHash;
-                if (!bundleName.Contains(OKAssetsConst.VARIANT) && autoCompletionExts)
-                {
-                    bundleName += OKAssetsConst.VARIANT;
-                }
-            }
-            else
-            {
-                s = Util.GetAssetBundleStreamingAssetsPath();
-            }
-
-            s = Path.Combine(s, bundleName);
-            return s;
-        }
-
-        public string GetAssetBundleNameByAssetPath(string path)
-        {
-            string abName;
-            if (!bundleTable.TryGetValue(path, out abName))
-            {
-                Debug.LogWarning(string.Format("通过{0}查找的AssetBundle不存在", path));
-            }
-
-            return abName;
-        }
 
         public void AddLoadedAssetBundleReference(string assetBundleName)
         {
@@ -1220,6 +1105,4 @@ namespace OKAssets
             }
         }
     }
-
-    
 }
