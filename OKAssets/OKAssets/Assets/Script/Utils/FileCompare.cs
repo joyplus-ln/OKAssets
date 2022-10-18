@@ -1,0 +1,526 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+
+namespace OKAssets
+{
+    public class FileCompare
+    {
+        public delegate void OnCompleteDelegate();
+
+        public delegate void OnItemCompleteDelegate();
+
+        public delegate void OnCompareCDNResult(BundleInfo[] diffFilesInfo, float totalByteSize);
+
+        //CDN上的assetbundle信息
+        private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
+
+        private void CopyFilesOut()
+        {
+            string streamingPath = Util.GetAssetBundleStreamingAssetsPath();
+            string dataPath = Util.DataPath;
+
+            List<string> copyFiles = new List<string>();
+            List<string> deleteFiles = new List<string>();
+            TextLoader loader = new TextLoader();
+            loader.Url = Util.GetBundlesInfoConfigStreamingAssetsPath();
+            loader.OnLoadComplete = delegate(BaseLoader l)
+            {
+                string streamingAssetsContent = loader.Text;
+                if (string.IsNullOrEmpty(streamingAssetsContent))
+                {
+                    return;
+                }
+
+                TextLoader _loader = new TextLoader();
+                _loader.Url = Util.GetBundlesInfoConfigPersistentDataPath();
+                _loader.OnLoadComplete = delegate(BaseLoader l)
+                {
+                    string storageContent = _loader.Text;
+                    if (string.IsNullOrEmpty(storageContent))
+                    {
+                        return;
+                    }
+
+                    string[] streamingAssetsfiles = streamingAssetsContent.Split('\n');
+                    string[] storagefiles = storageContent.Split('\n');
+                    Dictionary<string, BundleInfo> streamFilesDict = new Dictionary<string, BundleInfo>();
+                    Dictionary<string, BundleInfo> storageFilesDict = new Dictionary<string, BundleInfo>();
+                    for (int i = 0; i < streamingAssetsfiles.Length; i++)
+                    {
+                        string file = streamingAssetsfiles[i];
+                        if (string.IsNullOrEmpty(file))
+                            continue;
+                        BundleInfo streamingFBI = new BundleInfo();
+                        streamingFBI.Parse(file);
+                        string fileName = streamingFBI.name;
+                        streamFilesDict[fileName] = streamingFBI;
+                    }
+
+                    for (int i = 0; i < storagefiles.Length; i++)
+                    {
+                        string file = storagefiles[i];
+                        if (string.IsNullOrEmpty(file))
+                            continue;
+                        BundleInfo streamingFBI = new BundleInfo();
+                        streamingFBI.Parse(file);
+                        string fileName = streamingFBI.name;
+                        storageFilesDict[fileName] = streamingFBI;
+                    }
+
+                    foreach (string key in streamFilesDict.Keys)
+                    {
+                        BundleInfo streamingFBI = streamFilesDict[key];
+                        if (key.Equals(OKAssetsConst.FILENAME_BUNDLESTABLE_TXT) ||
+                            key.Equals(OKAssetsConst.FILENAME_BUILDVERSION_TXT))
+                        {
+                            copyFiles.Add(Path.Combine(streamingPath, key));
+                            //一边更新一遍将安装包的files合并到dataPath的files
+                            streamingFBI.location = BundleStorageLocation.STORAGE;
+                            OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                        }
+                        else
+                        {
+                            if (streamingFBI.loactionType == BundleLocation.Local)
+                            {
+                                //新装的包里不是存在CDN上的内容 都用streaming里的 也就是包体里的，并且更新本地DataPath的files.txt与streaming中files.txt内容一致。并且删除DataPath下的旧资源
+                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                                string path = Path.Combine(Util.DataPath, streamingFBI.name);
+                                deleteFiles.Add(path);
+                            }
+                            else
+                            {
+                                BundleInfo storageFBI = null;
+                                if (storageFilesDict.TryGetValue(key, out storageFBI))
+                                {
+                                    //老包中也有这个同名bundle,并且md5不一样
+                                    if (storageFBI.crcOrMD5Hash != streamingFBI.crcOrMD5Hash)
+                                    {
+                                        streamingFBI.location = BundleStorageLocation.CDN;
+                                        OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                                        string path = Path.Combine(Util.DataPath, streamingFBI.name);
+                                        deleteFiles.Add(path);
+                                    }
+                                    else
+                                    {
+                                        OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, storageFBI);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //复制刚才那些要更新的文件到dataPath
+                    CopyFiles(copyFiles.ToArray(), dataPath, delegate()
+                    {
+                        //重新写入file.txt
+                        OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                        for (int i = 0; i < deleteFiles.Count; i++)
+                        {
+                            if (File.Exists(deleteFiles[i]))
+                                File.Delete(deleteFiles[i]);
+                        }
+
+                        //释放完成，开始启动ts层面代码
+                        InitApplication();
+                    });
+                };
+                _loader.Load();
+            };
+            loader.Load();
+        }
+
+        void OnExtractResource()
+        {
+            //进入到这个方法之后表示，是因为装了新包了，并且新包里的buildversion大于本地的,或者本地根本就没有（第一次安装进入游戏）
+
+            string dataPath = Util.DataPath; //数据目录
+
+            //没有DATAPATH目录就创建一个
+            if (Directory.Exists(dataPath) == false)
+                Directory.CreateDirectory(dataPath);
+
+            string streamingPath_files_txt = Util.GetBundlesInfoConfigStreamingAssetsPath();
+            string dataPath_files_txt = Util.GetBundlesInfoConfigPersistentDataPath();
+
+            if (File.Exists(dataPath_files_txt))
+            {
+                //已经有files.txt在DataPath目录了
+                CopyFilesOut();
+            }
+            else
+            {
+                CopyFile(streamingPath_files_txt, dataPath, delegate() { CopyFilesOut(); });
+            }
+        }
+
+
+        /// <summary>
+        /// /释放资源
+        /// </summary>
+        public void CheckExtractResource()
+        {
+            //编辑器模式下，直接启动游戏
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            {
+                return;
+            }
+
+
+            string inBuildVersionFilePath = Util.GetBuildVersionConfigStreamingAssetsPath();
+            string outBuildVersionFilePath = Util.GetBuildVersionConfigPersistentDataPath();
+            Version inVersion = null;
+            TextLoader inBuildVersionLoader = new TextLoader();
+            inBuildVersionLoader.Url = inBuildVersionFilePath;
+            inBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
+            {
+                Debug.Log(inBuildVersionLoader.Text);
+                inVersion = new Version(inBuildVersionLoader.Text);
+                if (Directory.Exists(Util.DataPath) == false)
+                {
+                    OnExtractResource();
+                    return;
+                }
+
+                bool isExistsBuildVersionFile = File.Exists(outBuildVersionFilePath);
+                if (isExistsBuildVersionFile == false)
+                {
+                    Debug.Log("Can not find old buildversion.txt");
+                    OnExtractResource();
+                    return;
+                }
+
+                //检查版本号
+                Version outVersion = null;
+                TextLoader outBuildVersionLoader = new TextLoader();
+                outBuildVersionLoader.Url = outBuildVersionFilePath;
+                outBuildVersionLoader.OnLoadComplete = delegate(BaseLoader l)
+                {
+                    outVersion = new Version(outBuildVersionLoader.Text);
+                    if (inVersion != null && outVersion != null)
+                    {
+                        if ((outVersion.Major != inVersion.Major || outVersion.Minor != inVersion.Minor ||
+                             outVersion.Build != inVersion.Build) || (outVersion.Revision < inVersion.Revision &&
+                                                                      outVersion.Major == inVersion.Major &&
+                                                                      outVersion.Minor == inVersion.Minor &&
+                                                                      outVersion.Build == inVersion.Build))
+                        {
+                            OnExtractResource();
+                        }
+                        else
+                        {
+                            InitApplication();
+                        }
+                    }
+                };
+                outBuildVersionLoader.Load();
+            };
+            inBuildVersionLoader.Load();
+        }
+
+        public void CopyFile(string sourceFile, string destFolderPath, OnCompleteDelegate onComplete = null)
+        {
+            bool isFolder = string.IsNullOrEmpty(Path.GetFileName(destFolderPath)) ? true : false;
+            string sourceFilePath = sourceFile;
+            string sourceFileName = Path.GetFileName(sourceFilePath);
+            string destFile = "";
+            if (isFolder)
+            {
+                destFile = Path.Combine(destFolderPath, sourceFileName);
+            }
+            else
+            {
+                destFile = destFolderPath;
+            }
+
+            if (File.Exists(destFile)) File.Delete(destFile);
+            if (Util.IsAndroid())
+            {
+                BinaryLoader fileLoader = new BinaryLoader();
+                fileLoader.Url = sourceFilePath;
+                fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+                {
+                    File.WriteAllBytes(destFile, (byte[])loader.Content);
+                    if (onComplete != null)
+                    {
+                        onComplete();
+                    }
+                };
+                fileLoader.Load();
+            }
+            else
+            {
+                File.Copy(sourceFilePath, destFile, true);
+                if (onComplete != null)
+                {
+                    onComplete();
+                }
+            }
+        }
+
+        public void CopyFiles(string[] sourceFilePathArray, string destFolderPath, OnCompleteDelegate onComplete = null,
+            OnItemCompleteDelegate onItemComplete = null)
+        {
+            bool isFolder = string.IsNullOrEmpty(Path.GetFileName(destFolderPath)) ? true : false;
+
+            LoaderQueue queue = new LoaderQueue();
+            for (int i = 0; i < sourceFilePathArray.Length; i++)
+            {
+                string sourceFilePath = sourceFilePathArray[i];
+                string sourceFileName = Path.GetFileName(sourceFilePath);
+                string destFile = "";
+                if (isFolder)
+                {
+                    destFile = Path.Combine(destFolderPath, sourceFileName);
+                }
+                else
+                {
+                    destFile = destFolderPath;
+                }
+
+                if (File.Exists(destFile)) File.Delete(destFile);
+                if (Util.IsAndroid())
+                {
+                    BinaryLoader fileLoader = new BinaryLoader();
+                    fileLoader.Url = sourceFilePath;
+                    fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+                    {
+                        File.WriteAllBytes(destFile, (byte[])loader.Content);
+                        if (onItemComplete != null)
+                        {
+                            onItemComplete();
+                        }
+                    };
+                    queue.AddLoader(fileLoader);
+                }
+                else
+                {
+                    File.Copy(sourceFilePath, destFile, true);
+                }
+            }
+
+            if (Util.IsAndroid())
+            {
+                queue.OnLoadComplete = delegate(LoaderQueue q)
+                {
+                    if (onComplete != null)
+                    {
+                        onComplete();
+                    }
+                };
+                queue.Load();
+            }
+            else
+            {
+                if (onComplete != null)
+                {
+                    onComplete();
+                }
+            }
+        }
+
+
+        public void CompareFiles(string cdnFilesURL, OnCompareCDNResult onCompareResult)
+        {
+            List<BundleInfo> diffFilesInfoList = new List<BundleInfo>();
+            long totalByteSize = 0;
+            TextLoader cdnFilesTxtLoader = new TextLoader();
+            cdnFilesTxtLoader.Url = cdnFilesURL;
+            cdnFilesTxtLoader.OnLoadComplete = delegate(BaseLoader l)
+            {
+                string cdnFilesStr = cdnFilesTxtLoader.Text;
+                string[] cdnFiles = cdnFilesStr.Split('\n');
+                for (int i = 0; i < cdnFiles.Length; i++)
+                {
+                    string cdnFile = cdnFiles[i];
+                    if (string.IsNullOrEmpty(cdnFile))
+                    {
+                        continue;
+                    }
+
+                    BundleInfo cdnBundleInfo = new BundleInfo();
+                    cdnBundleInfo.Parse(cdnFile);
+                    //解析的时候顺便放入本地存一份CDN上files.txt信息
+                    OKResInfoUtil.UpdateBundleInfo(_cdnBundlesInfo, cdnBundleInfo);
+                    bool hasDiff = false;
+                    //获取目前本地的
+                    BundleInfo oldBundleInfo =OKResInfoUtil.GetBundleInfo(cdnBundleInfo.name);
+
+
+                    //如果本地已经有这个记录了
+                    if (oldBundleInfo != null)
+                    {
+                        //本地的全部需要下载
+                        if (cdnBundleInfo.loactionType == BundleLocation.Local)
+                        {
+                            //最后检查crc是否需要更新
+                            if (oldBundleInfo.crcOrMD5Hash.Equals(cdnBundleInfo.crcOrMD5Hash) == false)
+                            {
+                                hasDiff = true;
+                            }
+                        }
+
+                        //先比对一下tag，如果tag不一样就先修改一下tag
+                        if (oldBundleInfo.bundleTag.Equals(cdnBundleInfo.bundleTag) == false)
+                        {
+                            if (hasDiff)
+                            {
+                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
+                            }
+                            else
+                            {
+                                oldBundleInfo.bundleTag = cdnBundleInfo.bundleTag;
+                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, oldBundleInfo);
+                            }
+
+                            OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                        }
+                    }
+                    else
+                    {
+                        //先检查存储位置，必须是在streamingPath或者dataPath存储
+                        if (cdnBundleInfo.loactionType == BundleLocation.Local)
+                        {
+                            hasDiff = true;
+                        }
+
+                        //如果本地没有，那么查看这个是不是CDN位置的 如果是把记录更新
+                        if (cdnBundleInfo.location == BundleStorageLocation.CDN)
+                        {
+                            OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
+                            OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                        }
+                    }
+
+                    if (hasDiff)
+                    {
+                        BundleInfo newBundleInfo = new BundleInfo();
+                        newBundleInfo.Update(cdnBundleInfo);
+                        newBundleInfo.location = BundleStorageLocation.CDN;
+                        diffFilesInfoList.Add(newBundleInfo);
+                    }
+                }
+
+                for (int i = 0; i < diffFilesInfoList.Count; i++)
+                {
+                    totalByteSize += diffFilesInfoList[i].byteSize;
+                }
+
+                if (onCompareResult != null)
+                {
+                    onCompareResult(diffFilesInfoList.ToArray(), (float)totalByteSize);
+                }
+            };
+            cdnFilesTxtLoader.Load();
+        }
+
+        
+        
+        /// <summary>
+        /// 根据tag下载
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="onProgress"></param>
+        /// <param name="onComplete"></param>
+        public void DownloadBundleByTag(string tag, Action<float, float, int, int> progress, Action<bool> complete)
+        {
+            var downloadInfoArray = OKResInfoUtil.GetCDNBundlesByTags(tag).ToArray();
+            float totalSize = GetSizeByTags(tag);
+            LoaderQueue queue = new LoaderQueue();
+            for (int i = 0; i < downloadInfoArray.Length; i++)
+            {
+                BundleInfo info = downloadInfoArray[i];
+                string fileURL = Path.Combine(OKResInfoUtil.CdnUrl, info.name);
+
+                BinaryLoader loader = new BinaryLoader();
+                loader.Name = info.name;
+                loader.Url = fileURL;
+                loader.OnLoadComplete = delegate(BaseLoader l)
+                {
+                    BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
+                    finishInfo.location = BundleStorageLocation.STORAGE;
+                   OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo,finishInfo);
+                    string path = Path.Combine(Util.DataPath, finishInfo.name);
+                    if (File.Exists(path)) File.Delete(path);
+                    File.WriteAllBytes(path, (byte[])l.Content);
+                    OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                };
+                queue.AddLoader(loader);
+            }
+
+            queue.OnLoadProgress += delegate(LoaderQueue q)
+            {
+                if (progress != null)
+                {
+                    progress.Invoke(totalSize, q.ProgressByteSize, q.TotalLoadCount, q.CurrentLoadedCount);
+                }
+            };
+            queue.OnLoadComplete = delegate(LoaderQueue q)
+            {
+                OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                if (complete != null)
+                {
+                    complete.Invoke(true);
+                }
+            };
+            queue.Load();
+        }
+
+        private BundleInfo GetBundleInfoFormArray(BundleInfo[] infoArray, string name)
+        {
+            for (int i = 0; i < infoArray.Length; i++)
+            {
+                if (infoArray[i].name.Equals(name))
+                {
+                    return infoArray[i];
+                }
+            }
+
+            return null;
+        }
+
+
+
+
+        /// <summary>
+        /// 获取tag的下载量
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public float GetSizeByTags(string tag)
+        {
+            List<BundleInfo> bundles = GetBundlesByTags(tag);
+            float size = 0;
+            for (int i = 0; i < bundles.Count; i++)
+            {
+                if (bundles[i].location == BundleStorageLocation.CDN)
+                {
+                    size += bundles[i].byteSize;
+                }
+            }
+
+            return size;
+        }
+
+
+        /// <summary>
+        /// 根据tag获取所有bundle
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public List<BundleInfo> GetBundlesByTags(string tag)
+        {
+            List<BundleInfo> bundles = new List<BundleInfo>();
+            foreach (string key in OKAsset.GetInstance().StorageBundlesInfo.Keys)
+            {
+                if (OKAsset.GetInstance().StorageBundlesInfo[key].bundleTag == tag)
+                {
+                    bundles.Add(OKAsset.GetInstance().StorageBundlesInfo[key]);
+                }
+            }
+
+            return bundles;
+        }
+    }
+}

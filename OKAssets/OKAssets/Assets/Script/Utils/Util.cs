@@ -90,8 +90,7 @@ namespace OKAssets
 #endif
         }
 
-        
-        
+
 #if UNITY_EDITOR
         private static string GetPlatformForAssetBundles(BuildTarget target)
         {
@@ -119,7 +118,7 @@ namespace OKAssets
             }
         }
 #endif
-        
+
 #if !UNITY_EDITOR
         private static string GetPlatformForAssetBundles(RuntimePlatform target)
         {
@@ -178,7 +177,7 @@ namespace OKAssets
         {
             return Application.platform == RuntimePlatform.IPhonePlayer;
         }
-        
+
         /// <summary>
         /// 应用程序内容路径
         /// </summary>
@@ -200,8 +199,46 @@ namespace OKAssets
 
             return path;
         }
-        
 
+
+        public static string GetAssetBundleStreamingAssetsPath()
+        {
+            return Application.streamingAssetsPath + "/" + OKAssetsConst.ASSETBUNDLE_FOLDER + "/" +
+                   Util.GetPlatformName();
+        }
         
+        public static string GetBundlesInfoConfigStreamingAssetsPath()
+        {
+            return Path.Combine(GetAssetBundleStreamingAssetsPath(),
+                OKAssetsConst.FILENAME_FILES_TXT);
+        }
+
+        public static string GetBundlesInfoConfigPersistentDataPath()
+        {
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_FILES_TXT);
+        }
+
+        public static string GetBuildVersionConfigStreamingAssetsPath()
+        {
+            return Path.Combine(GetAssetBundleStreamingAssetsPath(),
+                OKAssetsConst.FILENAME_BUILDVERSION_TXT);
+        }
+
+        public static string GetBuildVersionConfigPersistentDataPath()
+        {
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUILDVERSION_TXT);
+        }
+
+        public static string GetBundlesTableConfigStreamingAssetsPath()
+        {
+            return Path.Combine(GetAssetBundleStreamingAssetsPath(),
+                OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
+        }
+
+        public static string GetBundlesTableConfigPersistentDataPath()
+        {
+            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
+        }
+
     }
 }

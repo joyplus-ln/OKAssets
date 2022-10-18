@@ -10,7 +10,7 @@ using UnityEngine.Video;
 
 namespace OKAssets
 {
-    public class OKResManager
+    public class OKAsset
     {
         public delegate void OnCompleteDelegate();
 
@@ -46,6 +46,7 @@ namespace OKAssets
 
         public delegate void OnLoadFontCompleteDelegate(Font font);
 
+        private Dictionary<string, BundleInfo> _storageBundlesInfo = new Dictionary<string, BundleInfo>();
 
         private AssetBundleManifest assetBundleManifest;
 
@@ -63,44 +64,52 @@ namespace OKAssets
 
         //bundle和文件的对应表
         private Dictionary<string, string> bundleTable = new Dictionary<string, string>();
-        private static OKResManager _instance;
+        private static OKAsset _instance;
+        private bool initialized = false;
+        private bool hotUpdate = false;
+        private string cdnUrl;
 
-        class AppConfigJSONData
+        public Dictionary<string, BundleInfo> StorageBundlesInfo
         {
-            public bool hot_update_enabled = false;
-            public string[] hot_update_cdn_release;
-            public string[] hot_update_cdn_debug;
+            get
+            {
+                return _storageBundlesInfo;
+            }
         }
 
-        private AppConfigJSONData appConfigData;
-        private bool initialized = false;
-
-        public static OKResManager GetInstance()
+        public static OKAsset GetInstance()
         {
             if (_instance == null)
             {
-                _instance = new OKResManager();
+                _instance = new OKAsset();
             }
 
             return _instance;
         }
 
-        public void Init()
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public void Init(bool hotUpdate, string cdnUrl)
         {
-            LoadBundlesTable();
+            if (initialized)
+            {
+                return;
+            }
 
+            this.hotUpdate = hotUpdate;
+            this.cdnUrl = cdnUrl;
             loadingAssetBundleNames = new List<string>();
             loadingBundleRequests = new Dictionary<string, List<LoadingAssetBundleRequest>>();
             dependenciesCache = new Dictionary<string, string[]>();
             loadedAssetBundles = new Dictionary<string, LoadedAssetBundle>();
-
+            LoadBundlesTable();
             LoadManifest();
             LoadAndWarmUpShaderBundle();
             initialized = true;
-            //StartCoroutine("CheckLoading");
         }
 
-        public void LoadBundlesTable()
+        private void LoadBundlesTable()
         {
             string bundletablepath = Util.DataPath + OKAssetsConst.BundleMapFlieName;
             //解析bundle和文件的对应表
@@ -126,7 +135,7 @@ namespace OKAssets
             }
         }
 
-        public void LoadManifest()
+        private void LoadManifest()
         {
             if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
             {
@@ -139,43 +148,6 @@ namespace OKAssets
 
             ab.Unload(false);
             ab = null;
-        }
-
-        public void InitAppConfigJSON(OnCompleteDelegate onComplete)
-        {
-            TextLoader loader = new TextLoader();
-            loader.Url = OKFileManager.GetInstance().GetAppConfigJSONPath();
-            loader.OnLoadComplete = delegate(BaseLoader l)
-            {
-                string json = loader.Text;
-                if (!string.IsNullOrEmpty(json))
-                {
-                    appConfigData = JsonUtility.FromJson<AppConfigJSONData>(json);
-                }
-                else
-                {
-                    appConfigData = new AppConfigJSONData();
-                }
-
-                if (onComplete != null)
-                {
-                    onComplete();
-                }
-            };
-            loader.OnLoadError = delegate(BaseLoader l)
-            {
-                appConfigData = new AppConfigJSONData();
-                if (onComplete != null)
-                {
-                    onComplete();
-                }
-            };
-            loader.Load();
-        }
-
-        public bool GetHotUpdateEnabled()
-        {
-            return appConfigData.hot_update_enabled;
         }
 
         private void LoadAndWarmUpShaderBundle()
@@ -262,8 +234,7 @@ namespace OKAssets
                 {
                     //添加到已经加载的列表中
                     loadedAssetBundles.Add(curLoadedAssetBundleName, new LoadedAssetBundle(l.AssetBundle, 0));
-                    OKFileManager.GetInstance()
-                        .WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, l as AssetBundleLoader);
+                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName,_storageBundlesInfo, l as AssetBundleLoader);
                 }
             };
             bundleLoader.Load();
@@ -412,8 +383,7 @@ namespace OKAssets
                     depLoader.AutoDispose = false;
                     depLoader.Load();
                     loadedAssetBundles.Add(depLoader.Name, new LoadedAssetBundle(depLoader.AssetBundle, 1));
-                    OKFileManager.GetInstance()
-                        .WriteBundleToStorageAndUpdateBundleInfo(dep, depLoader as AssetBundleLoader);
+                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(dep,_storageBundlesInfo, depLoader as AssetBundleLoader);
                     depLoader.Dispose();
                 }
             }
@@ -434,7 +404,7 @@ namespace OKAssets
                 loader.Load();
                 AssetBundle asset = loader.AssetBundle;
                 loadedAssetBundles.Add(name, new LoadedAssetBundle(asset, 1));
-                OKFileManager.GetInstance().WriteBundleToStorageAndUpdateBundleInfo(name, loader as AssetBundleLoader);
+                OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(name,_storageBundlesInfo, loader as AssetBundleLoader);
                 loader.Dispose();
                 return asset;
             }
@@ -1125,11 +1095,7 @@ namespace OKAssets
             return dependencies;
         }
 
-        public string GetAssetBundleStreamingAssetsPath()
-        {
-            return Application.streamingAssetsPath + "/" + OKAssetsConst.ASSETBUNDLE_FOLDER + "/" +
-                   Util.GetPlatformName();
-        }
+
 
         public string GetAssetBundleStoragePath()
         {
@@ -1141,15 +1107,15 @@ namespace OKAssets
             return Util.DataPath;
         }
 
-        public string GetDefaultAssetBundlesCDNPath()
+        private string GetDefaultAssetBundlesCDNPath()
         {
             if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
             {
-                return GetFilePath(appConfigData.hot_update_cdn_debug[0], OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
+                return GetFilePath(this.cdnUrl, OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
             }
             else
             {
-                return GetFilePath(appConfigData.hot_update_cdn_release[0], OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
+                return GetFilePath(this.cdnUrl, OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
             }
         }
 
@@ -1164,40 +1130,7 @@ namespace OKAssets
             return path + "/" + releaseType + "/" + Application.version + "/" + platform;
         }
 
-        public int GetPanelShowDownLoadSize()
-        {
-            return 2;
-        }
 
-        public string[] GetAssetBundlesCDNPath()
-        {
-            string platform = "Windows";
-#if UNITY_IOS
-        platform = "iOS";
-#elif UNITY_ANDROID
-            platform = "Android";
-#endif
-            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
-            {
-                string[] urls = new string[appConfigData.hot_update_cdn_debug.Length];
-                for (int i = 0; i < appConfigData.hot_update_cdn_debug.Length; i++)
-                {
-                    urls[i] = appConfigData.hot_update_cdn_debug[i] + "debug/" + Application.version + "/" + platform;
-                }
-
-                return urls;
-            }
-            else
-            {
-                string[] urls = new string[appConfigData.hot_update_cdn_release.Length];
-                for (int i = 0; i < appConfigData.hot_update_cdn_release.Length; i++)
-                {
-                    urls[i] = GetFilePath(appConfigData.hot_update_cdn_release[i], "release");
-                }
-
-                return urls;
-            }
-        }
 
         public BaseLoader GetAssetBundleLoader(string assetBundleName)
         {
@@ -1228,7 +1161,7 @@ namespace OKAssets
             {
                 if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)
                 {
-                    s = GetAssetBundleStreamingAssetsPath();
+                    s = Util.GetAssetBundleStreamingAssetsPath();
                 }
                 else if (bundleInfo.location == BundleStorageLocation.STORAGE)
                 {
@@ -1247,7 +1180,7 @@ namespace OKAssets
             }
             else
             {
-                s = GetAssetBundleStreamingAssetsPath();
+                s = Util.GetAssetBundleStreamingAssetsPath();
             }
 
             s = Path.Combine(s, bundleName);
@@ -1278,37 +1211,5 @@ namespace OKAssets
         }
     }
 
-    public class LoadedAssetBundle
-    {
-        public AssetBundle assetBundle;
-        public int referencedCount;
-
-        public LoadedAssetBundle(AssetBundle assetBundle, int referencedCount)
-        {
-            this.assetBundle = assetBundle;
-            this.referencedCount = referencedCount;
-        }
-
-        public int AddReference()
-        {
-            return ++referencedCount;
-        }
-
-        public int DeleteReference()
-        {
-            return --referencedCount;
-        }
-
-        public void Unload()
-        {
-            referencedCount = 0;
-            if (assetBundle == null)
-            {
-                return;
-            }
-
-            assetBundle.Unload(false);
-            assetBundle = null;
-        }
-    }
+    
 }

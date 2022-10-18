@@ -36,7 +36,7 @@ namespace OKAssets
                 //Debug.LogError("tag:" + tag); //tag是SpriteAtlas资源的文件名称
                 // GResManager.GetInstance()
                 //     .LoadAssetAsync(callBack(tag), (asset) => { action(asset as SpriteAtlas); });
-                action(OKResManager.GetInstance().LoadAsset(callBack(tag)) as SpriteAtlas);
+                action(OKAsset.GetInstance().LoadAsset(callBack(tag)) as SpriteAtlas);
             };
         }
 
@@ -68,7 +68,7 @@ namespace OKAssets
                 return atlas;
             }
 
-            return OKResManager.GetInstance().LoadAllSpriteInAtlas(atlasFullPath);
+            return OKAsset.GetInstance().LoadAllSpriteInAtlas(atlasFullPath);
         }
 
         public void LoadAtlasAsync(string texturePath, OnGetAtlasComplete callback = null)
@@ -84,7 +84,7 @@ namespace OKAssets
                 return;
             }
 
-            OKResManager.GetInstance().LoadAllSpriteInAtlasAsync(texturePath, delegate(AtlasInfo atlasInfo)
+            OKAsset.GetInstance().LoadAllSpriteInAtlasAsync(texturePath, delegate(AtlasInfo atlasInfo)
             {
                 if (callback != null)
                 {
@@ -110,7 +110,7 @@ namespace OKAssets
                 return atlas;
             }
 
-            Texture2D tex = OKResManager.GetInstance().LoadTexture2D(texturePath);
+            Texture2D tex = OKAsset.GetInstance().LoadTexture2D(texturePath);
             atlas = new AtlasInfo();
             atlas.texturePath = texturePath;
             atlas.texture = tex;
