@@ -14,18 +14,12 @@ namespace OKAssets
         public delegate void OnLoadQueueProgressDelegate(LoaderQueue queue);
 
         public delegate void OnLoadQueueCompleteDelegate(LoaderQueue queue);
-        
+
         public delegate void OnErrorDelegate();
 
- 
 
         public delegate void OnCompareCDNBuildVersionResult(bool needDownloadapp);
-
-        //存储在本地硬盘空间的assetbundle文件
-        private Dictionary<string, BundleInfo> _storageBundlesInfo = new Dictionary<string, BundleInfo>();
-
-        //CDN上的assetbundle信息
-        private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
+        
         private bool _initalizedCDNBundlesInfo = false;
         private static OKFileManager _instance;
         private bool _writeBundleInfoDirty = false;
@@ -41,24 +35,7 @@ namespace OKAssets
 
             return _instance;
         }
-
-        public Dictionary<string, BundleInfo> StorageBundlesInfo
-        {
-            get { return _storageBundlesInfo; }
-
-            set { _storageBundlesInfo = value; }
-        }
-
-        public Dictionary<string, BundleInfo> CDNBundlesInfo
-        {
-            get { return _cdnBundlesInfo; }
-
-            set { _cdnBundlesInfo = value; }
-        }
-
-
-       
-
+        
         public void LoadBundlesInfo()
         {
             //解析files.txt获取fileInfo
@@ -75,19 +52,18 @@ namespace OKAssets
 
                     BundleInfo bundleInfo = new BundleInfo();
                     bundleInfo.Parse(file);
-                    if (!_storageBundlesInfo.ContainsKey(bundleInfo.name))
+                    if (!OKAsset.GetInstance().StorageBundlesInfo.ContainsKey(bundleInfo.name))
                     {
-                        _storageBundlesInfo.Add(bundleInfo.name, bundleInfo);
+                        OKAsset.GetInstance().StorageBundlesInfo.Add(bundleInfo.name, bundleInfo);
                     }
                     else
                     {
-                        _storageBundlesInfo[bundleInfo.name] = bundleInfo;
+                        OKAsset.GetInstance().StorageBundlesInfo[bundleInfo.name] = bundleInfo;
                     }
                 }
             }
         }
-        
-        
+
 
         public void CompareCDNBuildVersion(string cdnBuildVersionURL, OnCompareCDNBuildVersionResult onCompareResult,
             OnErrorDelegate onError)
@@ -138,51 +114,11 @@ namespace OKAssets
             };
             loaderQueue.Load();
         }
-        
-
-
-
-
-
-        public BundleInfo GetBundleInfo(string name)
-        {
-            BundleInfo bundleInfo = null;
-            if (_storageBundlesInfo.TryGetValue(name, out bundleInfo))
-            {
-                return bundleInfo;
-            }
-
-            return null;
-        }
-
-
-
-
-
-
-
-        public bool HasBundleInfoOnStorage(string name)
-        {
-            BundleInfo bundleInfo = GetBundleInfo(name);
-            if (bundleInfo != null && (bundleInfo.location == BundleStorageLocation.STORAGE ||
-                                       bundleInfo.location == BundleStorageLocation.STREAMINGASSETS))
-            {
-                return true;
-            }
-
-            return false;
-        }
-        
-
-
-        
-
-        
 
         public BundleInfo[] GetStorageBundleInfoListBySubpackage(string tag)
         {
             List<BundleInfo> result = new List<BundleInfo>();
-            foreach (BundleInfo info in _storageBundlesInfo.Values)
+            foreach (BundleInfo info in OKAsset.GetInstance().StorageBundlesInfo.Values)
             {
                 if (info.bundleTag == tag)
                 {
@@ -199,8 +135,8 @@ namespace OKAssets
             foreach (BundleInfo item in bundlesInfo)
             {
                 BundleInfo cdnBundleInfo = null;
-                if (_cdnBundlesInfo.ContainsKey(item.name))
-                    cdnBundleInfo = _cdnBundlesInfo[item.name];
+                if (OKAsset.GetInstance().CdnBundlesInfo.ContainsKey(item.name))
+                    cdnBundleInfo = OKAsset.GetInstance().CdnBundlesInfo[item.name];
 
                 if (cdnBundleInfo == null)
                     continue;

@@ -47,6 +47,8 @@ namespace OKAssets
         public delegate void OnLoadFontCompleteDelegate(Font font);
 
         private Dictionary<string, BundleInfo> _storageBundlesInfo = new Dictionary<string, BundleInfo>();
+        
+        private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
 
         private AssetBundleManifest assetBundleManifest;
 
@@ -74,6 +76,14 @@ namespace OKAssets
             get
             {
                 return _storageBundlesInfo;
+            }
+        }
+        
+        public Dictionary<string, BundleInfo> CdnBundlesInfo
+        {
+            get
+            {
+                return _cdnBundlesInfo;
             }
         }
 
@@ -1135,7 +1145,7 @@ namespace OKAssets
         public BaseLoader GetAssetBundleLoader(string assetBundleName)
         {
             assetBundleName += OKAssetsConst.VARIANT;
-            BundleInfo bundleInfo = OKFileManager.GetInstance().GetBundleInfo(assetBundleName);
+            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.CDN)
@@ -1156,7 +1166,7 @@ namespace OKAssets
             if (autoCompletionExts)
                 assetBundleName += OKAssetsConst.VARIANT;
 
-            BundleInfo bundleInfo = OKFileManager.GetInstance().GetBundleInfo(assetBundleName);
+            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)

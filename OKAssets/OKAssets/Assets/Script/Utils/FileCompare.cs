@@ -12,10 +12,16 @@ namespace OKAssets
         public delegate void OnItemCompleteDelegate();
 
         public delegate void OnCompareCDNResult(BundleInfo[] diffFilesInfo, float totalByteSize);
-
-        //CDN上的assetbundle信息
-        private Dictionary<string, BundleInfo> _cdnBundlesInfo = new Dictionary<string, BundleInfo>();
-
+        
+        private OnCompleteDelegate complete;
+        
+        //跟线上的比对
+        public void UpdateOnLine(OnCompleteDelegate complete)
+        {
+            this.complete = complete;
+            CheckExtractResource();
+        }
+        
         private void CopyFilesOut()
         {
             string streamingPath = Util.GetAssetBundleStreamingAssetsPath();
@@ -123,7 +129,7 @@ namespace OKAssets
                         }
 
                         //释放完成，开始启动ts层面代码
-                        InitApplication();
+                        this.complete?.Invoke();
                     });
                 };
                 _loader.Load();
@@ -159,7 +165,7 @@ namespace OKAssets
         /// <summary>
         /// /释放资源
         /// </summary>
-        public void CheckExtractResource()
+        private void CheckExtractResource()
         {
             //编辑器模式下，直接启动游戏
             if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
@@ -210,7 +216,7 @@ namespace OKAssets
                         }
                         else
                         {
-                            InitApplication();
+                            this.complete?.Invoke();
                         }
                     }
                 };
@@ -342,7 +348,7 @@ namespace OKAssets
                     BundleInfo cdnBundleInfo = new BundleInfo();
                     cdnBundleInfo.Parse(cdnFile);
                     //解析的时候顺便放入本地存一份CDN上files.txt信息
-                    OKResInfoUtil.UpdateBundleInfo(_cdnBundlesInfo, cdnBundleInfo);
+                    OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
                     bool hasDiff = false;
                     //获取目前本地的
                     BundleInfo oldBundleInfo =OKResInfoUtil.GetBundleInfo(cdnBundleInfo.name);
