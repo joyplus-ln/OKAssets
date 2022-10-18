@@ -69,7 +69,6 @@ namespace OKAssets
         private static OKAsset _instance;
         private bool initialized = false;
         private bool hotUpdate = false;
-        private string cdnUrl;
 
         public Dictionary<string, BundleInfo> StorageBundlesInfo
         {
@@ -101,19 +100,22 @@ namespace OKAssets
                 return;
             }
 
+            OKResInfoUtil.CdnUrl = cdnUrl;
             this.hotUpdate = hotUpdate;
-            this.cdnUrl = cdnUrl;
             loadingAssetBundleNames = new List<string>();
             loadingBundleRequests = new Dictionary<string, List<LoadingAssetBundleRequest>>();
             dependenciesCache = new Dictionary<string, string[]>();
             loadedAssetBundles = new Dictionary<string, LoadedAssetBundle>();
             bundleTable = OKResInfoUtil.LoadBundlesTable();
             assetBundleManifest = OKResInfoUtil.LoadManifest();
-            LoadAndWarmUpShaderBundle();
             initialized = true;
+            
         }
 
 
+        /// <summary>
+        /// 加载shader资源和其变种
+        /// </summary>
         private void LoadAndWarmUpShaderBundle()
         {
             if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
