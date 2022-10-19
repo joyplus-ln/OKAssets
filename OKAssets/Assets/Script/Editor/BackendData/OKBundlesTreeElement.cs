@@ -13,7 +13,7 @@ namespace OKAssets.Editor
 		public bool isFolder = false;
 		public bool isNew = false;
 		[SerializeField]
-		private int _folderBundleType = (int)OKBundlesConsts.BundlePackageType.NONE;
+		private int _folderBundleType = (int)OkBundleEditorConst.BundlePackageType.NONE;
 		[SerializeField]
 		public string bundleName = "";
 		[SerializeField] 
@@ -55,7 +55,7 @@ namespace OKAssets.Editor
 			set
 			{
 				_folderBundleType = value;
-				bundleName = OKBundlesConsts.GetFolderBundleNameForEditor(_path, this);
+				bundleName = OkBundleEditorConst.GetFolderBundleNameForEditor(_path, this);
 			}
 		}
 
@@ -69,7 +69,7 @@ namespace OKAssets.Editor
 			set
 			{
 				_path = value;
-				bundleName = OKBundlesConsts.GetFolderBundleNameForEditor(_path, this);
+				bundleName = OkBundleEditorConst.GetFolderBundleNameForEditor(_path, this);
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace OKAssets.Editor
 			path = _path;
 		}
 
-		public void SetFolderBundleTypeAndDeepChildren(OKBundlesConsts.BundlePackageType t)
+		public void SetFolderBundleTypeAndDeepChildren(OkBundleEditorConst.BundlePackageType t)
 		{
 			folderBundleType = (int)t;
 			if (hasChildren)

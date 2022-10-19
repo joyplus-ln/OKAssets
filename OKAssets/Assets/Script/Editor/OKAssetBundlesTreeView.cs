@@ -243,9 +243,9 @@ namespace OKAssets.Editor
                 {
                     if (item.data.isFolder)
                     {
-                        GUI.backgroundColor = OKBundlesConsts.BundlePackageColor[item.data.folderBundleType];
+                        GUI.backgroundColor = OkBundleEditorConst.BundlePackageColor[item.data.folderBundleType];
                         item.data.folderBundleType = EditorGUI.Popup(cellRect, item.data.folderBundleType,
-                            OKBundlesConsts.BundlePackageOptions);
+                            OkBundleEditorConst.BundlePackageOptions);
                         /*
                          选择了BundlePackageOptions之后，是单纯的对于当前节点的设置。
                          按住左侧CTRL之后，是设置自身和子节点
@@ -256,19 +256,18 @@ namespace OKAssets.Editor
 
                         switch (item.data.folderBundleType)
                         {
-                            case (int)OKBundlesConsts.BundlePackageType.NONE:
-                            case (int)OKBundlesConsts.BundlePackageType.SINGLE:
-                            case (int)OKBundlesConsts.BundlePackageType.SINGLE_EXTS:
-                            case (int)OKBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE:
+                            case (int)OkBundleEditorConst.BundlePackageType.NONE:
+                            case (int)OkBundleEditorConst.BundlePackageType.SINGLE:
+                            case (int)OkBundleEditorConst.BundlePackageType.SINGLE_EXTS:
+                            case (int)OkBundleEditorConst.BundlePackageType.FOLDER_ALL_IN_ONE:
 
                                 break;
-                            case (int)OKBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
+                            case (int)OkBundleEditorConst.BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
                                 if (item.data.hasChildren)
                                 {
                                     foreach (OKBundlesTreeElement child in item.data.children)
                                     {
-                                        child.SetFolderBundleTypeAndDeepChildren(OKBundlesConsts.BundlePackageType
-                                            .NONE);
+                                        child.SetFolderBundleTypeAndDeepChildren(OkBundleEditorConst.BundlePackageType.NONE);
                                     }
                                 }
 
@@ -286,7 +285,7 @@ namespace OKAssets.Editor
                     break;
                 case MyColumns.TAG:
                 {
-                    if (item.data.folderBundleType != (int)OKBundlesConsts.BundlePackageType.NONE)
+                    if (item.data.folderBundleType != (int)OkBundleEditorConst.BundlePackageType.NONE)
                     {
                         GUI.backgroundColor = Color.green;
                         int index = 0;
@@ -315,11 +314,11 @@ namespace OKAssets.Editor
                     break;
                 case MyColumns.Location:
                 {
-                    if (item.data.folderBundleType != (int)OKBundlesConsts.BundlePackageType.NONE)
+                    if (item.data.folderBundleType != (int)OkBundleEditorConst.BundlePackageType.NONE)
                     {
                         GUI.backgroundColor = Color.cyan;
                         item.data.Location = EditorGUI.Popup(cellRect, item.data.Location,
-                            OKBundlesConsts.BundleLocationName);
+                            OkBundleEditorConst.BundleLocationName);
                         Event e = Event.current;
 
                         if (item.data.hasChildren)
@@ -506,103 +505,5 @@ namespace OKAssets.Editor
             }
         }
     }
-
-    public class OKBundlesConsts
-    {
-        public static Color[] BundlePackageColor = new Color[]
-        {
-            Color.white,
-            Color.cyan,
-            Color.green,
-            Color.yellow,
-            Color.magenta,
-        };
-
-        public enum BundlePackageType
-        {
-            NONE, //无
-            SINGLE, //目录下每个文件标记为一个单独的Bundle
-            FOLDER_ALL_IN_ONE, //目录下所有文件标记为同一个Bundle
-            FOLDER_ALL_IN_ONE_RECURSIVELY, //目录下所有文件标记为同一个Bundle（递归）
-            SINGLE_EXTS, //目录下每个文件(带有扩展名)标记为一个单独的Bundle
-        }
-
-        /// <summary>
-        /// 资源保存的位置
-        /// </summary>
-        public enum BundleLocation
-        {
-            Local = 0, //无
-            OnLine = 1
-        }
-
-        public static string[] BundleLocationName = new string[]
-        {
-            "Local",
-            "OnLine",
-        };
-
-        public static string[] BundlePackageOptions = new string[]
-        {
-            "无",
-            "目录下每个文件标记为一个单独的Bundle",
-            "目录下所有文件标记为同一个Bundle",
-            "目录下所有文件标记为同一个Bundle（递归）",
-            "目录下每个文件(带有扩展名)标记为一个单独的Bundle",
-        };
-
-        public static string GetFolderBundleNameForEditor(string path, OKBundlesTreeElement item)
-        {
-            if (path.IndexOf('/') == 0)
-            {
-                path = path.Substring(1);
-            }
-
-            string result = "";
-            switch ((BundlePackageType)item.folderBundleType)
-            {
-                case BundlePackageType.NONE:
-                    //有可能是递归的 要查找下他的父级
-                    OKBundlesTreeElement parent = GetParentUnNoneBundleType(item);
-                    if (parent != null)
-                    {
-                        result = GetFolderBundleNameForEditor(parent.path, parent);
-                    }
-
-                    break;
-                case BundlePackageType.SINGLE:
-                    result = path.Replace('/', '_');
-                    result += "_{filename}";
-                    break;
-                case BundlePackageType.SINGLE_EXTS:
-                    result = path.Replace('/', '_');
-                    result += "_{filename}_{fileextension}";
-                    break;
-                case BundlePackageType.FOLDER_ALL_IN_ONE:
-                    result = path.Replace('/', '_');
-                    break;
-                case BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
-                    result = path.Replace('/', '_');
-                    break;
-            }
-
-            result = result.ToLower();
-            return result;
-        }
-
-        public static OKBundlesTreeElement GetParentUnNoneBundleType(OKBundlesTreeElement item)
-        {
-            if (item.folderBundleType == (int)BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY)
-            {
-                return item;
-            }
-
-            if (item.parent != null)
-            {
-                return GetParentUnNoneBundleType((OKBundlesTreeElement)item.parent);
-            }
-
-            return null;
-        }
-    }
+    
 }

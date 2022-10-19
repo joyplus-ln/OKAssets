@@ -105,7 +105,7 @@ namespace OKAssets.Editor
                         continue;
                     }
 
-                    string abname = OKBundlesConsts.GetFolderBundleNameForEditor(item.path, item);
+                    string abname = OkBundleEditorConst.GetFolderBundleNameForEditor(item.path, item);
                     abname = abname.Replace("{filename}", Path.GetFileNameWithoutExtension(file.Name).ToLower());
                     abname = abname.Replace("{fileextension}", Path.GetExtension(file.Name).Replace(".", "").ToLower());
                     List<string> assetList;
