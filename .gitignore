@@ -9,3 +9,13 @@ OKAssets/OKAssets/OKAssets.sln
 OKAssets/OKAssets/Assembly-CSharp.csproj
 OKAssets/OKAssets/Temp
 OKAssets/OKAssets/Assembly-CSharp-Editor.csproj
+OKAssets/.idea
+OKAssets/AssetBundles
+OKAssets/Library
+OKAssets/Logs
+OKAssets/obj
+OKAssets/ProjectSettings
+OKAssets/UserSettings
+OKAssets/OKAssets.sln
+*.csproj
+OKAssets/Packages
