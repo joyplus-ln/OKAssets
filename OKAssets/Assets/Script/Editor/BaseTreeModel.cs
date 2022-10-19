@@ -12,7 +12,7 @@ namespace OKAssets.Editor
 	// The first element of the input list is required to have depth == -1 (the hiddenroot) and the rest to have
 	// depth >= 0 (otherwise an exception will be thrown)
 
-	public class BaseTreeModel<T> where T : BaseTreeElement
+	public class BaseTreeModel<T> where T : OKTreeElement
 	{
 		IList<T> m_Data;
 		T m_Root;
@@ -64,7 +64,7 @@ namespace OKAssets.Editor
 		public IList<int> GetAncestors(int id)
 		{
 			var parents = new List<int>();
-			BaseTreeElement T = Find(id);
+			OKTreeElement T = Find(id);
 			if (T != null)
 			{
 				while (T.parent != null)
@@ -86,15 +86,15 @@ namespace OKAssets.Editor
 			return new List<int>();
 		}
 
-		IList<int> GetParentsBelowStackBased(BaseTreeElement searchFromThis)
+		IList<int> GetParentsBelowStackBased(OKTreeElement searchFromThis)
 		{
-			Stack<BaseTreeElement> stack = new Stack<BaseTreeElement>();
+			Stack<OKTreeElement> stack = new Stack<OKTreeElement>();
 			stack.Push(searchFromThis);
 
 			var parentsBelow = new List<int>();
 			while (stack.Count > 0)
 			{
-				BaseTreeElement current = stack.Pop();
+				OKTreeElement current = stack.Pop();
 				if (current.hasChildren)
 				{
 					parentsBelow.Add(current.id);
@@ -133,7 +133,7 @@ namespace OKAssets.Editor
 			Changed();
 		}
 
-		public void AddElements(IList<T> elements, BaseTreeElement parent, int insertPosition)
+		public void AddElements(IList<T> elements, OKTreeElement parent, int insertPosition)
 		{
 			if (elements == null)
 				throw new ArgumentNullException("elements", "elements is null");
@@ -143,9 +143,9 @@ namespace OKAssets.Editor
 				throw new ArgumentNullException("parent", "parent is null");
 
 			if (parent.children == null)
-				parent.children = new List<BaseTreeElement>();
+				parent.children = new List<OKTreeElement>();
 
-			parent.children.InsertRange(insertPosition, elements.Cast<BaseTreeElement>());
+			parent.children.InsertRange(insertPosition, elements.Cast<OKTreeElement>());
 			foreach (var element in elements)
 			{
 				element.parent = parent;
@@ -174,7 +174,7 @@ namespace OKAssets.Editor
 			m_Data.Add(root);
 		}
 
-		public void AddElement(T element, BaseTreeElement parent, int insertPosition)
+		public void AddElement(T element, OKTreeElement parent, int insertPosition)
 		{
 			if (element == null)
 				throw new ArgumentNullException("element", "element is null");
@@ -182,7 +182,7 @@ namespace OKAssets.Editor
 				throw new ArgumentNullException("parent", "parent is null");
 
 			if (parent.children == null)
-				parent.children = new List<BaseTreeElement>();
+				parent.children = new List<OKTreeElement>();
 
 			parent.children.Insert(insertPosition, element);
 			element.parent = parent;
@@ -193,7 +193,7 @@ namespace OKAssets.Editor
 			Changed();
 		}
 
-		public void MoveElements(BaseTreeElement parentElement, int insertionIndex, List<BaseTreeElement> elements)
+		public void MoveElements(OKTreeElement parentElement, int insertionIndex, List<OKTreeElement> elements)
 		{
 			if (insertionIndex < 0)
 				throw new ArgumentException("Invalid input: insertionIndex is -1, client needs to decide what index elements should be reparented at");
@@ -214,7 +214,7 @@ namespace OKAssets.Editor
 			}
 
 			if (parentElement.children == null)
-				parentElement.children = new List<BaseTreeElement>();
+				parentElement.children = new List<OKTreeElement>();
 
 			// Insert dragged items under new parent
 			parentElement.children.InsertRange(insertionIndex, elements);

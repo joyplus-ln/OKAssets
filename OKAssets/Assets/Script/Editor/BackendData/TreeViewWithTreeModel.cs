@@ -9,7 +9,7 @@ using UnityEngine;
 namespace OKAssets.Editor
 {
 
-	internal class TreeViewItem<T> : TreeViewItem where T : BaseTreeElement
+	internal class TreeViewItem<T> : TreeViewItem where T : OKTreeElement
 	{
 		public T data { get; set; }
 
@@ -19,7 +19,7 @@ namespace OKAssets.Editor
 		}
 	}
 
-	internal class TreeViewWithTreeModel<T> : TreeView where T : BaseTreeElement
+	internal class TreeViewWithTreeModel<T> : TreeView where T : OKTreeElement
 	{
 		BaseTreeModel<T> m_TreeModel;
 		readonly List<TreeViewItem> m_Rows = new List<TreeViewItem>(100);
@@ -215,7 +215,7 @@ namespace OKAssets.Editor
 			if (beforeDroppingDraggedItems != null)
 				beforeDroppingDraggedItems(draggedRows);
 
-			var draggedElements = new List<BaseTreeElement>();
+			var draggedElements = new List<OKTreeElement>();
 			foreach (var x in draggedRows)
 				draggedElements.Add(((TreeViewItem<T>)x).data);
 

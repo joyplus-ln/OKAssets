@@ -243,9 +243,9 @@ namespace OKAssets.Editor
                 {
                     if (item.data.isFolder)
                     {
-                        GUI.backgroundColor = HybridBundlesConsts.BundlePackageColor[item.data.folderBundleType];
+                        GUI.backgroundColor = OKBundlesConsts.BundlePackageColor[item.data.folderBundleType];
                         item.data.folderBundleType = EditorGUI.Popup(cellRect, item.data.folderBundleType,
-                            HybridBundlesConsts.BundlePackageOptions);
+                            OKBundlesConsts.BundlePackageOptions);
                         /*
                          选择了BundlePackageOptions之后，是单纯的对于当前节点的设置。
                          按住左侧CTRL之后，是设置自身和子节点
@@ -256,18 +256,18 @@ namespace OKAssets.Editor
 
                         switch (item.data.folderBundleType)
                         {
-                            case (int)HybridBundlesConsts.BundlePackageType.NONE:
-                            case (int)HybridBundlesConsts.BundlePackageType.SINGLE:
-                            case (int)HybridBundlesConsts.BundlePackageType.SINGLE_EXTS:
-                            case (int)HybridBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE:
+                            case (int)OKBundlesConsts.BundlePackageType.NONE:
+                            case (int)OKBundlesConsts.BundlePackageType.SINGLE:
+                            case (int)OKBundlesConsts.BundlePackageType.SINGLE_EXTS:
+                            case (int)OKBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE:
 
                                 break;
-                            case (int)HybridBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
+                            case (int)OKBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
                                 if (item.data.hasChildren)
                                 {
                                     foreach (OKBundlesTreeElement child in item.data.children)
                                     {
-                                        child.SetFolderBundleTypeAndDeepChildren(HybridBundlesConsts.BundlePackageType
+                                        child.SetFolderBundleTypeAndDeepChildren(OKBundlesConsts.BundlePackageType
                                             .NONE);
                                     }
                                 }
@@ -286,7 +286,7 @@ namespace OKAssets.Editor
                     break;
                 case MyColumns.TAG:
                 {
-                    if (item.data.folderBundleType != (int)HybridBundlesConsts.BundlePackageType.NONE)
+                    if (item.data.folderBundleType != (int)OKBundlesConsts.BundlePackageType.NONE)
                     {
                         GUI.backgroundColor = Color.green;
                         int index = 0;
@@ -315,11 +315,11 @@ namespace OKAssets.Editor
                     break;
                 case MyColumns.Location:
                 {
-                    if (item.data.folderBundleType != (int)HybridBundlesConsts.BundlePackageType.NONE)
+                    if (item.data.folderBundleType != (int)OKBundlesConsts.BundlePackageType.NONE)
                     {
                         GUI.backgroundColor = Color.cyan;
                         item.data.Location = EditorGUI.Popup(cellRect, item.data.Location,
-                            HybridBundlesConsts.BundleLocationName);
+                            OKBundlesConsts.BundleLocationName);
                         Event e = Event.current;
 
                         if (item.data.hasChildren)
@@ -507,7 +507,7 @@ namespace OKAssets.Editor
         }
     }
 
-    public class HybridBundlesConsts
+    public class OKBundlesConsts
     {
         public static Color[] BundlePackageColor = new Color[]
         {

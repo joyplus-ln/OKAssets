@@ -10,7 +10,7 @@ namespace OKAssets.Editor
 
 	public static class BaseTreeElementUtility
 	{
-		public static void TreeToList<T>(T root, IList<T> result) where T : BaseTreeElement
+		public static void TreeToList<T>(T root, IList<T> result) where T : OKTreeElement
 		{
 			if (result == null)
 				throw new NullReferenceException("The input 'IList<T> result' list is null");
@@ -37,7 +37,7 @@ namespace OKAssets.Editor
 		// Returns the root of the tree parsed from the list (always the first element).
 		// Important: the first item and is required to have a depth value of -1. 
 		// The rest of the items should have depth >= 0. 
-		public static T ListToTree<T>(IList<T> list) where T : BaseTreeElement
+		public static T ListToTree<T>(IList<T> list) where T : OKTreeElement
 		{
 			// Validate input
 			ValidateDepthValues(list);
@@ -70,10 +70,10 @@ namespace OKAssets.Editor
 				}
 
 				// Fill child array
-				List<BaseTreeElement> childList = null;
+				List<OKTreeElement> childList = null;
 				if (childCount != 0)
 				{
-					childList = new List<BaseTreeElement>(childCount); // Allocate once
+					childList = new List<OKTreeElement>(childCount); // Allocate once
 					childCount = 0;
 					for (int i = parentIndex + 1; i < list.Count; i++)
 					{
@@ -96,7 +96,7 @@ namespace OKAssets.Editor
 		}
 
 		// Check state of input list
-		public static void ValidateDepthValues<T>(IList<T> list) where T : BaseTreeElement
+		public static void ValidateDepthValues<T>(IList<T> list) where T : OKTreeElement
 		{
 			if (list.Count == 0)
 				throw new ArgumentException("list should have items, count is 0, check before calling ValidateDepthValues", "list");
@@ -122,7 +122,7 @@ namespace OKAssets.Editor
 
 
 		// For updating depth values below any given element e.g after reparenting elements
-		public static void UpdateDepthValues<T>(T root) where T : BaseTreeElement
+		public static void UpdateDepthValues<T>(T root) where T : OKTreeElement
 		{
 			if (root == null)
 				throw new ArgumentNullException("root", "The root is null");
@@ -130,11 +130,11 @@ namespace OKAssets.Editor
 			if (!root.hasChildren)
 				return;
 
-			Stack<BaseTreeElement> stack = new Stack<BaseTreeElement>();
+			Stack<OKTreeElement> stack = new Stack<OKTreeElement>();
 			stack.Push(root);
 			while (stack.Count > 0)
 			{
-				BaseTreeElement current = stack.Pop();
+				OKTreeElement current = stack.Pop();
 				if (current.children != null)
 				{
 					foreach (var child in current.children)
@@ -147,7 +147,7 @@ namespace OKAssets.Editor
 		}
 
 		// Returns true if there is an ancestor of child in the elements list
-		static bool IsChildOf<T>(T child, IList<T> elements) where T : BaseTreeElement
+		static bool IsChildOf<T>(T child, IList<T> elements) where T : OKTreeElement
 		{
 			while (child != null)
 			{
@@ -158,7 +158,7 @@ namespace OKAssets.Editor
 			return false;
 		}
 
-		public static IList<T> FindCommonAncestorsWithinList<T>(IList<T> elements) where T : BaseTreeElement
+		public static IList<T> FindCommonAncestorsWithinList<T>(IList<T> elements) where T : OKTreeElement
 		{
 			if (elements.Count == 1)
 				return new List<T>(elements);

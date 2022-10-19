@@ -7,14 +7,14 @@ namespace OKAssets.Editor
 {
 
 	[Serializable]
-	public class BaseTreeElement
+	public class OKTreeElement
 	{
 		[SerializeField] int m_ID;
 		[SerializeField] string m_Name;
 		[SerializeField] int m_Depth;
 
-		[NonSerialized] BaseTreeElement m_Parent;
-		[NonSerialized] List<BaseTreeElement> m_Children;
+		[NonSerialized] OKTreeElement m_Parent;
+		[NonSerialized] List<OKTreeElement> m_Children;
 
 		public int depth
 		{
@@ -22,13 +22,13 @@ namespace OKAssets.Editor
 			set { m_Depth = value; }
 		}
 
-		public BaseTreeElement parent
+		public OKTreeElement parent
 		{
 			get { return m_Parent; }
 			set { m_Parent = value; }
 		}
 
-		public List<BaseTreeElement> children
+		public List<OKTreeElement> children
 		{
 			get { return m_Children; }
 			set { m_Children = value; }
@@ -58,11 +58,11 @@ namespace OKAssets.Editor
 			}
 		}
 
-		public BaseTreeElement()
+		public OKTreeElement()
 		{
 		}
 
-		public BaseTreeElement(string name, int depth, int id)
+		public OKTreeElement(string name, int depth, int id)
 		{
 			m_Name = name;
 			m_Depth = depth;

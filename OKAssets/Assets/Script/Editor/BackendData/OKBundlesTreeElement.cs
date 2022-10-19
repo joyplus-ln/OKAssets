@@ -6,14 +6,14 @@ using System;
 namespace OKAssets.Editor
 {
 	[Serializable]
-	public class OKBundlesTreeElement : BaseTreeElement
+	public class OKBundlesTreeElement : OKTreeElement
 	{
 		[SerializeField]
 		private string _path;
 		public bool isFolder = false;
 		public bool isNew = false;
 		[SerializeField]
-		private int _folderBundleType = (int)HybridBundlesConsts.BundlePackageType.NONE;
+		private int _folderBundleType = (int)OKBundlesConsts.BundlePackageType.NONE;
 		[SerializeField]
 		public string bundleName = "";
 		[SerializeField] 
@@ -55,7 +55,7 @@ namespace OKAssets.Editor
 			set
 			{
 				_folderBundleType = value;
-				bundleName = HybridBundlesConsts.GetFolderBundleNameForEditor(_path, this);
+				bundleName = OKBundlesConsts.GetFolderBundleNameForEditor(_path, this);
 			}
 		}
 
@@ -69,7 +69,7 @@ namespace OKAssets.Editor
 			set
 			{
 				_path = value;
-				bundleName = HybridBundlesConsts.GetFolderBundleNameForEditor(_path, this);
+				bundleName = OKBundlesConsts.GetFolderBundleNameForEditor(_path, this);
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace OKAssets.Editor
 			path = _path;
 		}
 
-		public void SetFolderBundleTypeAndDeepChildren(HybridBundlesConsts.BundlePackageType t)
+		public void SetFolderBundleTypeAndDeepChildren(OKBundlesConsts.BundlePackageType t)
 		{
 			folderBundleType = (int)t;
 			if (hasChildren)
