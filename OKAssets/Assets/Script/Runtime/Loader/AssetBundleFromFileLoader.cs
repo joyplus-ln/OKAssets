@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class AssetBundleFromFileLoader : BaseLoader
+    public class AssetBundleFromFileLoader : OKBaseLoader
     {
         private AssetBundleCreateRequest _createRequest;
 

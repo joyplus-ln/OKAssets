@@ -44,7 +44,7 @@ namespace OKAssets
         {
             TextLoader cdnFilesTxtLoader = new TextLoader();
             cdnFilesTxtLoader.Url = cdnFilesURL;
-            cdnFilesTxtLoader.OnLoadComplete = delegate(BaseLoader l)
+            cdnFilesTxtLoader.OnLoadComplete = delegate(OKBaseLoader l)
             {
                 string cdnFilesStr = cdnFilesTxtLoader.Text;
                 string[] cdnFiles = cdnFilesStr.Split('\n');
@@ -78,7 +78,7 @@ namespace OKAssets
         /// <param name="loader"></param>
         public static void WriteBundleToStorageAndUpdateBundleInfo(string name,
             Dictionary<string, BundleInfo> _cdnBundlesInfo,
-            AssetBundleLoader loader)
+            OKAssetBundleLoader loader)
         {
             if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
                 return;
@@ -104,7 +104,7 @@ namespace OKAssets
             }
         }
 
-        public static void WriteBundleToStorageAndUpdateBundleInfo(string name, AssetBundleLoader loader)
+        public static void WriteBundleToStorageAndUpdateBundleInfo(string name, OKAssetBundleLoader loader)
         {
             if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
                 return;
@@ -322,11 +322,11 @@ namespace OKAssets
         {
             TextLoader filesTxtLoader = new TextLoader();
             filesTxtLoader.Url = URL;
-            filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+            filesTxtLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 successCallBack?.Invoke(filesTxtLoader.Text);
             };
-            filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+            filesTxtLoader.OnLoadError = delegate(OKBaseLoader loader) { errorCallBack?.Invoke(); };
             filesTxtLoader.Load();
         }
 
@@ -334,27 +334,27 @@ namespace OKAssets
         {
             BinaryLoader filesTxtLoader = new BinaryLoader();
             filesTxtLoader.Url = URL;
-            filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+            filesTxtLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 successCallBack?.Invoke((byte[])filesTxtLoader.Content);
             };
-            filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+            filesTxtLoader.OnLoadError = delegate(OKBaseLoader loader) { errorCallBack?.Invoke(); };
             filesTxtLoader.Load();
         }
 
 
         public static void LoadBinaryAssets(string[] URLs, Action<string, byte[]> successCallBack, Action errorCallBack)
         {
-            LoaderQueue queue = new LoaderQueue();
+            OKLoaderQueue queue = new OKLoaderQueue();
             for (int i = 0; i < URLs.Length; i++)
             {
                 BinaryLoader filesTxtLoader = new BinaryLoader();
                 filesTxtLoader.Url = URLs[i];
-                filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+                filesTxtLoader.OnLoadComplete = delegate(OKBaseLoader loader)
                 {
                     successCallBack?.Invoke(URLs[i], (byte[])filesTxtLoader.Content);
                 };
-                filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+                filesTxtLoader.OnLoadError = delegate(OKBaseLoader loader) { errorCallBack?.Invoke(); };
                 queue.AddLoader(filesTxtLoader);
             }
 
@@ -365,7 +365,7 @@ namespace OKAssets
             OKFileManager.OnLoadQueueProgressDelegate onProgress, Action<List<BundleInfo>> downLoadFailCallBack)
         {
             List<BundleInfo> loadFailedList = new List<BundleInfo>();
-            LoaderQueue queue = new LoaderQueue();
+            OKLoaderQueue queue = new OKLoaderQueue();
             for (int i = 0; i < downloadInfoArray.Length; i++)
             {
                 BundleInfo info = downloadInfoArray[i];
@@ -373,7 +373,7 @@ namespace OKAssets
                 BinaryLoader loader = new BinaryLoader();
                 loader.Name = info.name;
                 loader.Url = fileURL;
-                loader.OnLoadComplete = delegate(BaseLoader l)
+                loader.OnLoadComplete = delegate(OKBaseLoader l)
                 {
                     BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
                     finishInfo.location = BundleStorageLocation.STORAGE;
@@ -383,18 +383,18 @@ namespace OKAssets
                     File.WriteAllBytes(path, (byte[])l.Content);
                     WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
                 };
-                loader.OnLoadError = delegate(BaseLoader baseLoader) { loadFailedList.Add(info); };
+                loader.OnLoadError = delegate(OKBaseLoader baseLoader) { loadFailedList.Add(info); };
                 queue.AddLoader(loader);
             }
 
-            queue.OnLoadProgress += delegate(LoaderQueue q)
+            queue.OnLoadProgress += delegate(OKLoaderQueue q)
             {
                 if (onProgress != null)
                 {
                     onProgress(q);
                 }
             };
-            queue.OnLoadComplete = delegate(LoaderQueue q) { downLoadFailCallBack?.Invoke(loadFailedList); };
+            queue.OnLoadComplete = delegate(OKLoaderQueue q) { downLoadFailCallBack?.Invoke(loadFailedList); };
             queue.Load();
         }
         
@@ -402,7 +402,7 @@ namespace OKAssets
         {
             BinaryLoader fileLoader = new BinaryLoader();
             fileLoader.Url = filePath + "/" + fileName;
-            fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+            fileLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 string path = Path.Combine(Util.DataPath, fileName);
                 File.WriteAllBytes(path, (byte[])loader.Content);

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace OKAssets
 {
-    public class SceneLoader : BaseLoader
+    public class SceneLoader : OKBaseLoader
     {
         private string _sceneName = "";
         private LoadSceneMode _loadSceneMode = LoadSceneMode.Single;

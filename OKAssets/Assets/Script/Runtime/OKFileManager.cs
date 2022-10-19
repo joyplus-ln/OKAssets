@@ -11,8 +11,8 @@ namespace OKAssets
 {
     public class OKFileManager
     {
-        public delegate void OnLoadQueueProgressDelegate(LoaderQueue queue);
-        public delegate void OnLoadQueueCompleteDelegate(LoaderQueue queue);
+        public delegate void OnLoadQueueProgressDelegate(OKLoaderQueue queue);
+        public delegate void OnLoadQueueCompleteDelegate(OKLoaderQueue queue);
         public delegate void OnErrorDelegate();
         public delegate void OnCompareCDNBuildVersionResult(bool needDownloadapp);
         
@@ -22,24 +22,24 @@ namespace OKAssets
             //检查版本号
             Version cdnVersion = null;
             Version storageVersion = null;
-            LoaderQueue loaderQueue = new LoaderQueue();
+            OKLoaderQueue okLoaderQueue = new OKLoaderQueue();
             TextLoader cdnBuildVersionLoader = new TextLoader();
             cdnBuildVersionLoader.TimeOut = 2;
             cdnBuildVersionLoader.Url = cdnBuildVersionURL;
-            cdnBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
+            cdnBuildVersionLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 cdnVersion = new Version(cdnBuildVersionLoader.Text);
             };
-            loaderQueue.AddLoader(cdnBuildVersionLoader);
+            okLoaderQueue.AddLoader(cdnBuildVersionLoader);
 
             TextLoader storageBuildVersionLoader = new TextLoader();
             storageBuildVersionLoader.Url = Util.GetBuildVersionConfigPersistentDataPath();
-            storageBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
+            storageBuildVersionLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 storageVersion = new Version(storageBuildVersionLoader.Text);
             };
-            loaderQueue.AddLoader(storageBuildVersionLoader);
-            loaderQueue.OnLoadComplete = delegate(LoaderQueue queue)
+            okLoaderQueue.AddLoader(storageBuildVersionLoader);
+            okLoaderQueue.OnLoadComplete = delegate(OKLoaderQueue queue)
             {
                 bool needDownloadApp = false;
                 bool needDownloadBundle = false;
@@ -56,14 +56,14 @@ namespace OKAssets
                     onCompareResult(needDownloadApp);
                 }
             };
-            loaderQueue.OnLoadError = delegate(LoaderQueue queue)
+            okLoaderQueue.OnLoadError = delegate(OKLoaderQueue queue)
             {
                 if (onError != null)
                 {
                     onError();
                 }
             };
-            loaderQueue.Load();
+            okLoaderQueue.Load();
         }
         
         internal static void CompareFiles(string cdnFilesURL, FileCompare.OnCompareCDNResult onCompareResult)

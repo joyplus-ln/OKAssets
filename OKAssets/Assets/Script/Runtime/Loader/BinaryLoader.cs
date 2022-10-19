@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class BinaryLoader : BaseLoader
+    public class BinaryLoader : OKBaseLoader
     {
         protected UnityWebRequest _request;
 

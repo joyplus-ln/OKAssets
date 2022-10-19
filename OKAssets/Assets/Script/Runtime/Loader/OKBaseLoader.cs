@@ -6,13 +6,13 @@ using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public abstract class BaseLoader : ITicker
+    public abstract class OKBaseLoader : ITicker
     {
-        public delegate void OnLoadProgressDelegate(BaseLoader loader);
+        public delegate void OnLoadProgressDelegate(OKBaseLoader loader);
 
-        public delegate void OnLoadCompleteDelegate(BaseLoader loader);
+        public delegate void OnLoadCompleteDelegate(OKBaseLoader loader);
 
-        public delegate void OnLoadErrorDelegate(BaseLoader loader);
+        public delegate void OnLoadErrorDelegate(OKBaseLoader loader);
 
         public OnLoadProgressDelegate OnLoadProgress;
         public OnLoadCompleteDelegate OnLoadComplete;

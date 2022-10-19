@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
-using System.IO;
 using UnityEngine.Networking;
 
 namespace OKAssets
 {
-    public class AssetBundleLoader : BinaryLoader
+    public class OKAssetBundleLoader : BinaryLoader
     {
         public override AssetBundle AssetBundle
         {

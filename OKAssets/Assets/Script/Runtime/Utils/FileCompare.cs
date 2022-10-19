@@ -31,7 +31,7 @@ namespace OKAssets
             List<string> deleteFiles = new List<string>();
             TextLoader loader = new TextLoader();
             loader.Url = Util.GetBundlesInfoConfigStreamingAssetsPath();
-            loader.OnLoadComplete = delegate(BaseLoader l)
+            loader.OnLoadComplete = delegate(OKBaseLoader l)
             {
                 string streamingAssetsContent = loader.Text;
                 if (string.IsNullOrEmpty(streamingAssetsContent))
@@ -41,7 +41,7 @@ namespace OKAssets
 
                 TextLoader _loader = new TextLoader();
                 _loader.Url = Util.GetBundlesInfoConfigPersistentDataPath();
-                _loader.OnLoadComplete = delegate(BaseLoader l)
+                _loader.OnLoadComplete = delegate(OKBaseLoader l)
                 {
                     string storageContent = _loader.Text;
                     if (string.IsNullOrEmpty(storageContent))
@@ -179,7 +179,7 @@ namespace OKAssets
             Version inVersion = null;
             TextLoader inBuildVersionLoader = new TextLoader();
             inBuildVersionLoader.Url = inBuildVersionFilePath;
-            inBuildVersionLoader.OnLoadComplete = delegate(BaseLoader loader)
+            inBuildVersionLoader.OnLoadComplete = delegate(OKBaseLoader loader)
             {
                 Debug.Log(inBuildVersionLoader.Text);
                 inVersion = new Version(inBuildVersionLoader.Text);
@@ -201,7 +201,7 @@ namespace OKAssets
                 Version outVersion = null;
                 TextLoader outBuildVersionLoader = new TextLoader();
                 outBuildVersionLoader.Url = outBuildVersionFilePath;
-                outBuildVersionLoader.OnLoadComplete = delegate(BaseLoader l)
+                outBuildVersionLoader.OnLoadComplete = delegate(OKBaseLoader l)
                 {
                     outVersion = new Version(outBuildVersionLoader.Text);
                     if (inVersion != null && outVersion != null)
@@ -245,7 +245,7 @@ namespace OKAssets
             {
                 BinaryLoader fileLoader = new BinaryLoader();
                 fileLoader.Url = sourceFilePath;
-                fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+                fileLoader.OnLoadComplete = delegate(OKBaseLoader loader)
                 {
                     File.WriteAllBytes(destFile, (byte[])loader.Content);
                     if (onComplete != null)
@@ -270,7 +270,7 @@ namespace OKAssets
         {
             bool isFolder = string.IsNullOrEmpty(Path.GetFileName(destFolderPath)) ? true : false;
 
-            LoaderQueue queue = new LoaderQueue();
+            OKLoaderQueue queue = new OKLoaderQueue();
             for (int i = 0; i < sourceFilePathArray.Length; i++)
             {
                 string sourceFilePath = sourceFilePathArray[i];
@@ -290,7 +290,7 @@ namespace OKAssets
                 {
                     BinaryLoader fileLoader = new BinaryLoader();
                     fileLoader.Url = sourceFilePath;
-                    fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+                    fileLoader.OnLoadComplete = delegate(OKBaseLoader loader)
                     {
                         File.WriteAllBytes(destFile, (byte[])loader.Content);
                         if (onItemComplete != null)
@@ -308,7 +308,7 @@ namespace OKAssets
 
             if (Util.IsAndroid())
             {
-                queue.OnLoadComplete = delegate(LoaderQueue q)
+                queue.OnLoadComplete = delegate(OKLoaderQueue q)
                 {
                     if (onComplete != null)
                     {
@@ -341,7 +341,7 @@ namespace OKAssets
         {
             var downloadInfoArray = OKResUtil.GetCDNBundlesByTags(tag).ToArray();
             float totalSize = GetSizeByTags(tag);
-            LoaderQueue queue = new LoaderQueue();
+            OKLoaderQueue queue = new OKLoaderQueue();
             for (int i = 0; i < downloadInfoArray.Length; i++)
             {
                 BundleInfo info = downloadInfoArray[i];
@@ -350,7 +350,7 @@ namespace OKAssets
                 BinaryLoader loader = new BinaryLoader();
                 loader.Name = info.name;
                 loader.Url = fileURL;
-                loader.OnLoadComplete = delegate(BaseLoader l)
+                loader.OnLoadComplete = delegate(OKBaseLoader l)
                 {
                     BundleInfo finishInfo = OKResUtil.GetBundleInfoFormArray(downloadInfoArray, l.Name);
                     finishInfo.location = BundleStorageLocation.STORAGE;
@@ -363,14 +363,14 @@ namespace OKAssets
                 queue.AddLoader(loader);
             }
 
-            queue.OnLoadProgress += delegate(LoaderQueue q)
+            queue.OnLoadProgress += delegate(OKLoaderQueue q)
             {
                 if (progress != null)
                 {
                     progress.Invoke(totalSize, q.ProgressByteSize, q.TotalLoadCount, q.CurrentLoadedCount);
                 }
             };
-            queue.OnLoadComplete = delegate(LoaderQueue q)
+            queue.OnLoadComplete = delegate(OKLoaderQueue q)
             {
                 OKResUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
                 if (complete != null)
