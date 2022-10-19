@@ -3,15 +3,8 @@
   "version": "1.0.0",
   "displayName": "okassets",
   "description": "Unity\u8d44\u6e90\u7ba1\u7406\u63d2\u4ef6",
-  "unity": "2020.3",
-  "unityRelease": "0b5",
-  "documentationUrl": "https://example.com/",
-  "changelogUrl": "https://example.com/changelog.html",
-  "licensesUrl": "https://example.com/licensing.html",
   "keywords": [
-    "keyword1",
-    "keyword2",
-    "keyword3"
+    "Script"
   ],
   "author": {
     "name": "joyplus",
