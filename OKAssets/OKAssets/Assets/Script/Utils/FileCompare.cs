@@ -84,14 +84,14 @@ namespace OKAssets
                             copyFiles.Add(Path.Combine(streamingPath, key));
                             //一边更新一遍将安装包的files合并到dataPath的files
                             streamingFBI.location = BundleStorageLocation.STORAGE;
-                            OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                            OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
                         }
                         else
                         {
                             if (streamingFBI.loactionType == BundleLocation.Local)
                             {
                                 //新装的包里不是存在CDN上的内容 都用streaming里的 也就是包体里的，并且更新本地DataPath的files.txt与streaming中files.txt内容一致。并且删除DataPath下的旧资源
-                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                                OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
                                 string path = Path.Combine(Util.DataPath, streamingFBI.name);
                                 deleteFiles.Add(path);
                             }
@@ -104,13 +104,13 @@ namespace OKAssets
                                     if (storageFBI.crcOrMD5Hash != streamingFBI.crcOrMD5Hash)
                                     {
                                         streamingFBI.location = BundleStorageLocation.CDN;
-                                        OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
+                                        OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, streamingFBI);
                                         string path = Path.Combine(Util.DataPath, streamingFBI.name);
                                         deleteFiles.Add(path);
                                     }
                                     else
                                     {
-                                        OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, storageFBI);
+                                        OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, storageFBI);
                                     }
                                 }
                             }
@@ -121,7 +121,7 @@ namespace OKAssets
                     CopyFiles(copyFiles.ToArray(), dataPath, delegate()
                     {
                         //重新写入file.txt
-                        OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                        OKResUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
                         for (int i = 0; i < deleteFiles.Count; i++)
                         {
                             if (File.Exists(deleteFiles[i]))
@@ -327,99 +327,7 @@ namespace OKAssets
         }
 
 
-        public void CompareFiles(string cdnFilesURL, OnCompareCDNResult onCompareResult)
-        {
-            List<BundleInfo> diffFilesInfoList = new List<BundleInfo>();
-            long totalByteSize = 0;
-            TextLoader cdnFilesTxtLoader = new TextLoader();
-            cdnFilesTxtLoader.Url = cdnFilesURL;
-            cdnFilesTxtLoader.OnLoadComplete = delegate(BaseLoader l)
-            {
-                string cdnFilesStr = cdnFilesTxtLoader.Text;
-                string[] cdnFiles = cdnFilesStr.Split('\n');
-                for (int i = 0; i < cdnFiles.Length; i++)
-                {
-                    string cdnFile = cdnFiles[i];
-                    if (string.IsNullOrEmpty(cdnFile))
-                    {
-                        continue;
-                    }
-
-                    BundleInfo cdnBundleInfo = new BundleInfo();
-                    cdnBundleInfo.Parse(cdnFile);
-                    //解析的时候顺便放入本地存一份CDN上files.txt信息
-                    OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
-                    bool hasDiff = false;
-                    //获取目前本地的
-                    BundleInfo oldBundleInfo =OKResInfoUtil.GetBundleInfo(cdnBundleInfo.name);
-
-
-                    //如果本地已经有这个记录了
-                    if (oldBundleInfo != null)
-                    {
-                        //本地的全部需要下载
-                        if (cdnBundleInfo.loactionType == BundleLocation.Local)
-                        {
-                            //最后检查crc是否需要更新
-                            if (oldBundleInfo.crcOrMD5Hash.Equals(cdnBundleInfo.crcOrMD5Hash) == false)
-                            {
-                                hasDiff = true;
-                            }
-                        }
-
-                        //先比对一下tag，如果tag不一样就先修改一下tag
-                        if (oldBundleInfo.bundleTag.Equals(cdnBundleInfo.bundleTag) == false)
-                        {
-                            if (hasDiff)
-                            {
-                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
-                            }
-                            else
-                            {
-                                oldBundleInfo.bundleTag = cdnBundleInfo.bundleTag;
-                                OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, oldBundleInfo);
-                            }
-
-                            OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
-                        }
-                    }
-                    else
-                    {
-                        //先检查存储位置，必须是在streamingPath或者dataPath存储
-                        if (cdnBundleInfo.loactionType == BundleLocation.Local)
-                        {
-                            hasDiff = true;
-                        }
-
-                        //如果本地没有，那么查看这个是不是CDN位置的 如果是把记录更新
-                        if (cdnBundleInfo.location == BundleStorageLocation.CDN)
-                        {
-                            OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
-                            OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
-                        }
-                    }
-
-                    if (hasDiff)
-                    {
-                        BundleInfo newBundleInfo = new BundleInfo();
-                        newBundleInfo.Update(cdnBundleInfo);
-                        newBundleInfo.location = BundleStorageLocation.CDN;
-                        diffFilesInfoList.Add(newBundleInfo);
-                    }
-                }
-
-                for (int i = 0; i < diffFilesInfoList.Count; i++)
-                {
-                    totalByteSize += diffFilesInfoList[i].byteSize;
-                }
-
-                if (onCompareResult != null)
-                {
-                    onCompareResult(diffFilesInfoList.ToArray(), (float)totalByteSize);
-                }
-            };
-            cdnFilesTxtLoader.Load();
-        }
+        
 
         
         
@@ -431,26 +339,26 @@ namespace OKAssets
         /// <param name="onComplete"></param>
         public void DownloadBundleByTag(string tag, Action<float, float, int, int> progress, Action<bool> complete)
         {
-            var downloadInfoArray = OKResInfoUtil.GetCDNBundlesByTags(tag).ToArray();
+            var downloadInfoArray = OKResUtil.GetCDNBundlesByTags(tag).ToArray();
             float totalSize = GetSizeByTags(tag);
             LoaderQueue queue = new LoaderQueue();
             for (int i = 0; i < downloadInfoArray.Length; i++)
             {
                 BundleInfo info = downloadInfoArray[i];
-                string fileURL = Path.Combine(OKResInfoUtil.CdnUrl, info.name);
+                string fileURL = Path.Combine(OKResUtil.CdnUrl, info.name);
 
                 BinaryLoader loader = new BinaryLoader();
                 loader.Name = info.name;
                 loader.Url = fileURL;
                 loader.OnLoadComplete = delegate(BaseLoader l)
                 {
-                    BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
+                    BundleInfo finishInfo = OKResUtil.GetBundleInfoFormArray(downloadInfoArray, l.Name);
                     finishInfo.location = BundleStorageLocation.STORAGE;
-                   OKResInfoUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo,finishInfo);
+                   OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo,finishInfo);
                     string path = Path.Combine(Util.DataPath, finishInfo.name);
                     if (File.Exists(path)) File.Delete(path);
                     File.WriteAllBytes(path, (byte[])l.Content);
-                    OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                    OKResUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
                 };
                 queue.AddLoader(loader);
             }
@@ -464,7 +372,7 @@ namespace OKAssets
             };
             queue.OnLoadComplete = delegate(LoaderQueue q)
             {
-                OKResInfoUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                OKResUtil.WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
                 if (complete != null)
                 {
                     complete.Invoke(true);
@@ -472,23 +380,7 @@ namespace OKAssets
             };
             queue.Load();
         }
-
-        private BundleInfo GetBundleInfoFormArray(BundleInfo[] infoArray, string name)
-        {
-            for (int i = 0; i < infoArray.Length; i++)
-            {
-                if (infoArray[i].name.Equals(name))
-                {
-                    return infoArray[i];
-                }
-            }
-
-            return null;
-        }
-
-
-
-
+        
         /// <summary>
         /// 获取tag的下载量
         /// </summary>
@@ -525,7 +417,6 @@ namespace OKAssets
                     bundles.Add(OKAsset.GetInstance().StorageBundlesInfo[key]);
                 }
             }
-
             return bundles;
         }
     }

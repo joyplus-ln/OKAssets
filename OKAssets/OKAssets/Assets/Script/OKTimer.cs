@@ -5,7 +5,7 @@ namespace OKAssets
 {
     public class OKTimer
     {
-        Timer tTimer = new Timer(100);//实例化Timer类，设置间隔时间为10000毫秒；
+        Timer tTimer = new Timer(100); //实例化Timer类，设置间隔时间为10000毫秒；
         private static OKTimer _instance = null;
 
         public static OKTimer Inatance
@@ -26,7 +26,6 @@ namespace OKAssets
 
         private void Init()
         {
-           
             tTimer.Elapsed += new System.Timers.ElapsedEventHandler(Update);
             tTimer.AutoReset = true;
             tTimer.Enabled = true;
@@ -40,6 +39,7 @@ namespace OKAssets
             {
                 tickerList[i].Update();
             }
+
             tTimer.Start();
         }
 
@@ -56,6 +56,6 @@ namespace OKAssets
 
     public interface ITicker
     {
-        public abstract void Update();
+        abstract void Update();
     }
 }

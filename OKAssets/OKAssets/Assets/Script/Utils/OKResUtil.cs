@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace OKAssets
 {
-    public class OKResInfoUtil
+    public class OKResUtil
     {
         public static string CdnUrl = "";
 
@@ -232,7 +233,7 @@ namespace OKAssets
             if (autoCompletionExts)
                 assetBundleName += OKAssetsConst.VARIANT;
 
-            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
+            BundleInfo bundleInfo = OKResUtil.GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.STREAMINGASSETS)
@@ -262,7 +263,6 @@ namespace OKAssets
             s = Path.Combine(s, bundleName);
             return s;
         }
-
 
 
         internal static string GetAssetBundleStoragePath()
@@ -296,6 +296,122 @@ namespace OKAssets
             platform = "Android";
 #endif
             return path + "/" + releaseType + "/" + Application.version + "/" + platform;
+        }
+
+        internal static BundleInfo GetBundleInfoFormArray(BundleInfo[] infoArray, string name)
+        {
+            for (int i = 0; i < infoArray.Length; i++)
+            {
+                if (infoArray[i].name.Equals(name))
+                {
+                    return infoArray[i];
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// 加载text格式的文件
+        /// </summary>
+        /// <param name="URL"></param>
+        /// <param name="successCallBack"></param>
+        /// <param name="errorCallBack"></param>
+        public static void LoadTextAsset(string URL, Action<string> successCallBack, Action errorCallBack)
+        {
+            TextLoader filesTxtLoader = new TextLoader();
+            filesTxtLoader.Url = URL;
+            filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+            {
+                successCallBack?.Invoke(filesTxtLoader.Text);
+            };
+            filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+            filesTxtLoader.Load();
+        }
+
+        public static void LoadBinaryAsset(string URL, Action<byte[]> successCallBack, Action errorCallBack)
+        {
+            BinaryLoader filesTxtLoader = new BinaryLoader();
+            filesTxtLoader.Url = URL;
+            filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+            {
+                successCallBack?.Invoke((byte[])filesTxtLoader.Content);
+            };
+            filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+            filesTxtLoader.Load();
+        }
+
+
+        public static void LoadBinaryAssets(string[] URLs, Action<string, byte[]> successCallBack, Action errorCallBack)
+        {
+            LoaderQueue queue = new LoaderQueue();
+            for (int i = 0; i < URLs.Length; i++)
+            {
+                BinaryLoader filesTxtLoader = new BinaryLoader();
+                filesTxtLoader.Url = URLs[i];
+                filesTxtLoader.OnLoadComplete = delegate(BaseLoader loader)
+                {
+                    successCallBack?.Invoke(URLs[i], (byte[])filesTxtLoader.Content);
+                };
+                filesTxtLoader.OnLoadError = delegate(BaseLoader loader) { errorCallBack?.Invoke(); };
+                queue.AddLoader(filesTxtLoader);
+            }
+
+            queue.Load();
+        }
+
+        public static void DownloadFilesByBundleInfo(BundleInfo[] downloadInfoArray,
+            OKFileManager.OnLoadQueueProgressDelegate onProgress, Action<List<BundleInfo>> downLoadFailCallBack)
+        {
+            List<BundleInfo> loadFailedList = new List<BundleInfo>();
+            LoaderQueue queue = new LoaderQueue();
+            for (int i = 0; i < downloadInfoArray.Length; i++)
+            {
+                BundleInfo info = downloadInfoArray[i];
+                string fileURL = Path.Combine(CdnUrl, info.nameWithHash);
+                BinaryLoader loader = new BinaryLoader();
+                loader.Name = info.name;
+                loader.Url = fileURL;
+                loader.OnLoadComplete = delegate(BaseLoader l)
+                {
+                    BundleInfo finishInfo = GetBundleInfoFormArray(downloadInfoArray, l.Name);
+                    finishInfo.location = BundleStorageLocation.STORAGE;
+                    UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, finishInfo);
+                    string path = Path.Combine(Util.DataPath, finishInfo.nameWithHash);
+                    if (File.Exists(path)) File.Delete(path);
+                    File.WriteAllBytes(path, (byte[])l.Content);
+                    WriteBundlesInfoToFilesTxt(OKAsset.GetInstance().StorageBundlesInfo);
+                };
+                loader.OnLoadError = delegate(BaseLoader baseLoader) { loadFailedList.Add(info); };
+                queue.AddLoader(loader);
+            }
+
+            queue.OnLoadProgress += delegate(LoaderQueue q)
+            {
+                if (onProgress != null)
+                {
+                    onProgress(q);
+                }
+            };
+            queue.OnLoadComplete = delegate(LoaderQueue q) { downLoadFailCallBack?.Invoke(loadFailedList); };
+            queue.Load();
+        }
+        
+        internal static void DownLoadFile(string filePath, string fileName, Action<byte[]> complete)
+        {
+            BinaryLoader fileLoader = new BinaryLoader();
+            fileLoader.Url = filePath + "/" + fileName;
+            fileLoader.OnLoadComplete = delegate(BaseLoader loader)
+            {
+                string path = Path.Combine(Util.DataPath, fileName);
+                File.WriteAllBytes(path, (byte[])loader.Content);
+                if (complete != null)
+                {
+                    complete((byte[])loader.Content);
+                }
+            };
+            fileLoader.Load();
         }
     }
 }

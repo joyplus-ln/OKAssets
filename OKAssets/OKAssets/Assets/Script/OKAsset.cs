@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,14 +8,13 @@ using UnityEditor;
 #endif
 using UnityEngine.U2D;
 using UnityEngine.Video;
+using Object = UnityEngine.Object;
 
 namespace OKAssets
 {
-    public class OKAsset
+    public class OKAsset : ITicker
     {
         public delegate void OnCompleteDelegate();
-
-        public delegate void OnErrorDelegate();
 
         public delegate void OnLoadItemCompleteDelegate();
 
@@ -75,16 +75,12 @@ namespace OKAssets
             get { return _storageBundlesInfo; }
         }
 
-        public Dictionary<string, BundleInfo> CdnBundlesInfo
-        {
-            get { return _cdnBundlesInfo; }
-        }
-
         public static OKAsset GetInstance()
         {
             if (_instance == null)
             {
                 _instance = new OKAsset();
+                OKTimer.Inatance.Add(_instance);
             }
 
             return _instance;
@@ -93,23 +89,98 @@ namespace OKAssets
         /// <summary>
         /// 初始化
         /// </summary>
-        public void Init(bool hotUpdate, string cdnUrl)
+        public void Init()
         {
             if (initialized)
             {
                 return;
             }
 
-            OKResInfoUtil.CdnUrl = cdnUrl;
-            this.hotUpdate = hotUpdate;
             loadingAssetBundleNames = new List<string>();
             loadingBundleRequests = new Dictionary<string, List<LoadingAssetBundleRequest>>();
             dependenciesCache = new Dictionary<string, string[]>();
             loadedAssetBundles = new Dictionary<string, LoadedAssetBundle>();
-            bundleTable = OKResInfoUtil.LoadBundlesTable();
-            assetBundleManifest = OKResInfoUtil.LoadManifest();
+            bundleTable = OKResUtil.LoadBundlesTable();
+            assetBundleManifest = OKResUtil.LoadManifest();
             initialized = true;
-            
+        }
+
+        public void CheckUpdate(string URL, FileCompare.OnCompareCDNResult loadSuccessCallBack,
+            Action loadErrorCallBack)
+        {
+            OKResUtil.CdnUrl = URL;
+            string CDNVersionFileURL = OKResUtil.GetDefaultAssetBundlesCDNPath() + "/" +
+                                       OKAssetsConst.FILENAME_BUILDVERSION_TXT;
+            string CDNFileTableURL = OKResUtil.GetDefaultAssetBundlesCDNPath() + "/" + OKAssetsConst.FILENAME_FILES_TXT;
+
+            void LoadSuccessful(bool needDownloadapp)
+            {
+                OKFileManager.CompareFiles(CDNFileTableURL, loadSuccessCallBack);
+            }
+
+            void LoadError()
+            {
+                loadErrorCallBack?.Invoke();
+            }
+
+            OKFileManager.CompareCDNBuildVersion(CDNVersionFileURL, LoadSuccessful, LoadError);
+        }
+
+        /// <summary>
+        /// 下载文件
+        /// </summary>
+        /// <param name="diffFilesInfo"></param>
+        /// <param name="progress"></param>
+        /// <param name="downLoadFailCallBack"></param>
+        public void DownLoadDiffBundles(BundleInfo[] diffFilesInfo, OKFileManager.OnLoadQueueProgressDelegate progress,
+            Action<List<BundleInfo>> downLoadFailCallBack)
+        {
+            OKResUtil.DownloadFilesByBundleInfo(diffFilesInfo, progress, downLoadFailCallBack);
+        }
+
+
+        /// <summary>
+        /// 获取某个tag需要下载的大小
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public float GetBundleDownLoadSizeByTag(string tag)
+        {
+            float size = 0;
+            BundleInfo[] totalTagBundle = OKFileManager.GetStorageBundleInfoListBySubpackage(tag);
+            for (int i = 0; i < totalTagBundle.Length; i++)
+            {
+                BundleInfo bundleInfo = totalTagBundle[i];
+                if (bundleInfo.location == BundleStorageLocation.CDN)
+                {
+                    size += bundleInfo.byteSize;
+                }
+            }
+
+            return size;
+        }
+
+        /// <summary>
+        /// 下载某个tag标记的所有资源
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="progress"></param>
+        /// <param name="downLoadFailCallBack"></param>
+        public void DownLoadBundleByTag(string tag, OKFileManager.OnLoadQueueProgressDelegate progress,
+            Action<List<BundleInfo>> downLoadFailCallBack)
+        {
+            BundleInfo[] totalTagBundle = OKFileManager.GetStorageBundleInfoListBySubpackage(tag);
+            List<BundleInfo> cdnBundleInfoList = new List<BundleInfo>();
+            for (int i = 0; i < totalTagBundle.Length; i++)
+            {
+                BundleInfo bundleInfo = totalTagBundle[i];
+                if (bundleInfo.location == BundleStorageLocation.CDN)
+                {
+                    cdnBundleInfoList.Add(bundleInfo);
+                }
+            }
+
+            OKResUtil.DownloadFilesByBundleInfo(cdnBundleInfoList.ToArray(), progress, downLoadFailCallBack);
         }
 
 
@@ -189,7 +260,7 @@ namespace OKAssets
             loadingAssetBundleNames.Add(assetBundleName);
             //开始加载
             BaseLoader bundleLoader = GetAssetBundleLoader(assetBundleName);
-            bundleLoader.Url = OKResInfoUtil.GetAssetBundlePath(assetBundleName);
+            bundleLoader.Url = OKResUtil.GetAssetBundlePath(assetBundleName);
             bundleLoader.Name = assetBundleName;
             bundleLoader.IsAsync = true;
             bundleLoader.OnLoadComplete += delegate(BaseLoader l)
@@ -200,23 +271,14 @@ namespace OKAssets
                 {
                     //添加到已经加载的列表中
                     loadedAssetBundles.Add(curLoadedAssetBundleName, new LoadedAssetBundle(l.AssetBundle, 0));
-                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, _storageBundlesInfo,
+                    OKResUtil.WriteBundleToStorageAndUpdateBundleInfo(curLoadedAssetBundleName, _storageBundlesInfo,
                         l as AssetBundleLoader);
                 }
             };
             bundleLoader.Load();
         }
 
-        //IEnumerator CheckLoading()
-        //{
-        //	while (true)
-        //	{
-
-        //		yield return new WaitForSecondsRealtime(0.02f);
-        //	}
-        //}
-
-        void Update()
+        public void Update()
         {
             if (!initialized)
                 return;
@@ -261,15 +323,7 @@ namespace OKAssets
                 }
             }
         }
-
-        public void OnTick()
-        {
-        }
-
-        public void OnLateTick()
-        {
-        }
-
+        
         //判断一个assetbundle是否正在加载中
         private bool IsAssetBundleLoading(string assetBundleName)
         {
@@ -344,13 +398,13 @@ namespace OKAssets
                 else
                 {
                     depLoader = GetAssetBundleLoader(dep);
-                    depLoader.Url = OKResInfoUtil.GetAssetBundlePath(dep);
+                    depLoader.Url = OKResUtil.GetAssetBundlePath(dep);
                     depLoader.Name = dep;
                     depLoader.IsAsync = false;
                     depLoader.AutoDispose = false;
                     depLoader.Load();
                     loadedAssetBundles.Add(depLoader.Name, new LoadedAssetBundle(depLoader.AssetBundle, 1));
-                    OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(dep, _storageBundlesInfo,
+                    OKResUtil.WriteBundleToStorageAndUpdateBundleInfo(dep, _storageBundlesInfo,
                         depLoader as AssetBundleLoader);
                     depLoader.Dispose();
                 }
@@ -365,14 +419,14 @@ namespace OKAssets
             else
             {
                 BaseLoader loader = GetAssetBundleLoader(name);
-                loader.Url = OKResInfoUtil.GetAssetBundlePath(name);
+                loader.Url = OKResUtil.GetAssetBundlePath(name);
                 loader.Name = name;
                 loader.IsAsync = false;
                 loader.AutoDispose = false;
                 loader.Load();
                 AssetBundle asset = loader.AssetBundle;
                 loadedAssetBundles.Add(name, new LoadedAssetBundle(asset, 1));
-                OKResInfoUtil.WriteBundleToStorageAndUpdateBundleInfo(name, _storageBundlesInfo,
+                OKResUtil.WriteBundleToStorageAndUpdateBundleInfo(name, _storageBundlesInfo,
                     loader as AssetBundleLoader);
                 loader.Dispose();
                 return asset;
@@ -1080,7 +1134,7 @@ namespace OKAssets
         public BaseLoader GetAssetBundleLoader(string assetBundleName)
         {
             assetBundleName += OKAssetsConst.VARIANT;
-            BundleInfo bundleInfo = OKResInfoUtil.GetBundleInfo(assetBundleName);
+            BundleInfo bundleInfo = OKResUtil.GetBundleInfo(assetBundleName);
             if (bundleInfo != null)
             {
                 if (bundleInfo.location == BundleStorageLocation.CDN)
