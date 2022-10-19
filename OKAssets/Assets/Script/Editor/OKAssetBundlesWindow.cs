@@ -16,7 +16,7 @@ namespace OKAssets.Editor
 		[SerializeField] MultiColumnHeaderState m_MultiColumnHeaderState;
 		SearchField m_SearchField;
 		OKAssetBundlesTreeView m_TreeView;
-		MyTreeAsset m_MyTreeAsset;
+		OKTreeAsset mOkTreeAsset;
 
 		[MenuItem("OKAssets/OpenConfigWindow")]
 		public static OKAssetBundlesWindow GetWindow()
@@ -64,7 +64,7 @@ namespace OKAssets.Editor
 				if (firstInit)
 					multiColumnHeader.ResizeToFit();
 
-				var treeModel = new BaseTreeModel<HybridBundlesTreeElement>(GetData());
+				var treeModel = new BaseTreeModel<OKBundlesTreeElement>(GetData());
 
 				m_TreeView = new OKAssetBundlesTreeView(m_TreeViewState, multiColumnHeader, treeModel);
 
@@ -78,17 +78,17 @@ namespace OKAssets.Editor
 			}
 		}
 
-		IList<HybridBundlesTreeElement> GetData()
+		IList<OKBundlesTreeElement> GetData()
 		{
-			if (m_MyTreeAsset == null)
+			if (mOkTreeAsset == null)
 			{
 				OKBundlesInitScript.CreatOkAssetTreeData();
-				m_MyTreeAsset = AssetDatabase.LoadMainAssetAtPath(OKAssetsConst.OKAssetBundleData) as MyTreeAsset;
+				mOkTreeAsset = AssetDatabase.LoadMainAssetAtPath(OKAssetsConst.OKAssetBundleData) as OKTreeAsset;
 			}
-			if (m_MyTreeAsset != null)
+			if (mOkTreeAsset != null)
 			{
-				m_MyTreeAsset.UpdateData();
-				return m_MyTreeAsset.treeElements;
+				mOkTreeAsset.UpdateData();
+				return mOkTreeAsset.treeElements;
 			}
 			return null;
 		}
@@ -97,8 +97,8 @@ namespace OKAssets.Editor
 		{
 			// AssetDatabase.DeleteAsset(OKAssetsConst.OKAssetBundleData);
 			// AssetDatabase.Refresh();
-			MyTreeAsset dataScript = ScriptableObject.CreateInstance<MyTreeAsset>();
-			dataScript.treeElements = m_MyTreeAsset.treeElements;
+			OKTreeAsset dataScript = ScriptableObject.CreateInstance<OKTreeAsset>();
+			dataScript.treeElements = mOkTreeAsset.treeElements;
 			// AssetDatabase.CreateAsset(dataScript, OKAssetsConst.OKAssetBundleData);
 			// AssetDatabase.SaveAssets();
 			// AssetDatabase.Refresh();
@@ -143,7 +143,7 @@ namespace OKAssets.Editor
 
 				GUILayout.FlexibleSpace();
 
-				GUILayout.Label(m_MyTreeAsset != null ? AssetDatabase.GetAssetPath(m_MyTreeAsset) : string.Empty);
+				GUILayout.Label(mOkTreeAsset != null ? AssetDatabase.GetAssetPath(mOkTreeAsset) : string.Empty);
 
 				GUILayout.FlexibleSpace();
 

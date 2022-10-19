@@ -22,7 +22,7 @@ namespace OKAssets.Editor
         {
             return $"OKAssetBuild{EditorUserBuildSettings.activeBuildTarget}.asset";
         }
-        private static HybridBundlesBuildVersion LoadBundleVersionData()
+        private static OKBundlesBuildVersion LoadBundleVersionData()
         {
             
             string path = $"Assets/{GetActivePlatformBuildVersionFileName()}";
@@ -30,8 +30,8 @@ namespace OKAssets.Editor
             {
                 
             }
-            HybridBundlesBuildVersion buildVersions = AssetDatabase.LoadMainAssetAtPath(path) as
-                HybridBundlesBuildVersion;
+            OKBundlesBuildVersion buildVersions = AssetDatabase.LoadMainAssetAtPath(path) as
+                OKBundlesBuildVersion;
             return buildVersions;
         }
     }

@@ -8,41 +8,41 @@ namespace OKAssets.Editor
 {
 
 	[CreateAssetMenu(fileName = "OKAssetBundlesData", menuName = "OKAssetBundlesDataAsset", order = 1)]
-	public class MyTreeAsset : ScriptableObject
+	public class OKTreeAsset : ScriptableObject
 	{
 		[SerializeField]
-		public List<HybridBundlesTreeElement> treeElements;
+		public List<OKBundlesTreeElement> treeElements;
 		public void UpdateData()
 		{
 			if (treeElements == null)
 			{
-				treeElements = new List<HybridBundlesTreeElement>();
+				treeElements = new List<OKBundlesTreeElement>();
 			}
 			ClearOldFolderIsNewFlag();
-			List<HybridBundlesTreeElement> list = new List<HybridBundlesTreeElement>();
+			List<OKBundlesTreeElement> list = new List<OKBundlesTreeElement>();
 			string rootPath = Application.dataPath + $"/{OKAssetsConst.okConfig.ResFolderName}";
 			if (!Directory.Exists(rootPath))
 			{
 				Directory.CreateDirectory(rootPath);
 			}
 			int depth = -1;
-			var root = new HybridBundlesTreeElement("Root", depth, GenerateIntID(), rootPath);
+			var root = new OKBundlesTreeElement("Root", depth, GenerateIntID(), rootPath);
 			list.Add(root);
 			IterFiles(list, rootPath, depth + 1);
 			treeElements = list;
 		}
 
-		private void IterFiles(List<HybridBundlesTreeElement> list, string rootPath, int depth)
+		private void IterFiles(List<OKBundlesTreeElement> list, string rootPath, int depth)
 		{
 			DirectoryInfo folder = new DirectoryInfo(rootPath);
 			DirectoryInfo[] dirInfo = folder.GetDirectories();
 			foreach (DirectoryInfo nextFolder in dirInfo)
 			{
-				HybridBundlesTreeElement fItem = new HybridBundlesTreeElement(nextFolder.Name, depth, GenerateIntID(), FullPathToBundlePath(nextFolder.FullName));
+				OKBundlesTreeElement fItem = new OKBundlesTreeElement(nextFolder.Name, depth, GenerateIntID(), FullPathToBundlePath(nextFolder.FullName));
 				fItem.isFolder = true;
 				if (HasFolderInfo(fItem.path))
 				{
-					HybridBundlesTreeElement old = GetFolerInfo(fItem.path);
+					OKBundlesTreeElement old = GetFolerInfo(fItem.path);
 					fItem.CopyFrom(old);
 				}
 				else
@@ -57,7 +57,7 @@ namespace OKAssets.Editor
 
 		private bool HasFolderInfo(string path)
 		{
-			foreach (HybridBundlesTreeElement old in treeElements)
+			foreach (OKBundlesTreeElement old in treeElements)
 			{
 				if (old.path.Equals(path))
 				{
@@ -67,9 +67,9 @@ namespace OKAssets.Editor
 			return false;
 		}
 
-		private HybridBundlesTreeElement GetFolerInfo(string path)
+		private OKBundlesTreeElement GetFolerInfo(string path)
 		{
-			foreach (HybridBundlesTreeElement old in treeElements)
+			foreach (OKBundlesTreeElement old in treeElements)
 			{
 				if (old.path.Equals(path))
 				{
@@ -81,7 +81,7 @@ namespace OKAssets.Editor
 
 		private void ClearOldFolderIsNewFlag()
 		{
-			foreach (HybridBundlesTreeElement old in treeElements)
+			foreach (OKBundlesTreeElement old in treeElements)
 			{
 				old.isNew = false;
 			}

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace OKAssets.Editor
 {
-    internal class OKAssetBundlesTreeView : TreeViewWithTreeModel<HybridBundlesTreeElement>
+    internal class OKAssetBundlesTreeView : TreeViewWithTreeModel<OKBundlesTreeElement>
     {
         const float kRowHeights = 20f;
         const float kToggleWidth = 18f;
@@ -96,7 +96,7 @@ namespace OKAssets.Editor
         }
 
         public OKAssetBundlesTreeView(TreeViewState state, MultiColumnHeader multicolumnHeader,
-            BaseTreeModel<HybridBundlesTreeElement> model) : base(state, multicolumnHeader, model)
+            BaseTreeModel<OKBundlesTreeElement> model) : base(state, multicolumnHeader, model)
         {
             Assert.AreEqual(m_SortOptions.Length, Enum.GetValues(typeof(MyColumns)).Length,
                 "Ensure number of sort options are in sync with number of MyColumns enum values");
@@ -153,7 +153,7 @@ namespace OKAssets.Editor
             if (sortedColumns.Length == 0)
                 return;
 
-            var myTypes = rootItem.children.Cast<TreeViewItem<HybridBundlesTreeElement>>();
+            var myTypes = rootItem.children.Cast<TreeViewItem<OKBundlesTreeElement>>();
             var orderedQuery = InitialOrder(myTypes, sortedColumns);
             for (int i = 1; i < sortedColumns.Length; i++)
             {
@@ -171,8 +171,8 @@ namespace OKAssets.Editor
             rootItem.children = orderedQuery.Cast<TreeViewItem>().ToList();
         }
 
-        IOrderedEnumerable<TreeViewItem<HybridBundlesTreeElement>> InitialOrder(
-            IEnumerable<TreeViewItem<HybridBundlesTreeElement>> myTypes, int[] history)
+        IOrderedEnumerable<TreeViewItem<OKBundlesTreeElement>> InitialOrder(
+            IEnumerable<TreeViewItem<OKBundlesTreeElement>> myTypes, int[] history)
         {
             SortOption sortOption = m_SortOptions[history[0]];
             bool ascending = multiColumnHeader.IsSortedAscending(history[0]);
@@ -191,7 +191,7 @@ namespace OKAssets.Editor
 
         protected override void RowGUI(RowGUIArgs args)
         {
-            var item = (TreeViewItem<HybridBundlesTreeElement>)args.item;
+            var item = (TreeViewItem<OKBundlesTreeElement>)args.item;
 
             for (int i = 0; i < args.GetNumVisibleColumns(); ++i)
             {
@@ -199,7 +199,7 @@ namespace OKAssets.Editor
             }
         }
 
-        void CellGUI(Rect cellRect, TreeViewItem<HybridBundlesTreeElement> item, MyColumns column, ref RowGUIArgs args)
+        void CellGUI(Rect cellRect, TreeViewItem<OKBundlesTreeElement> item, MyColumns column, ref RowGUIArgs args)
         {
             // Center cell rect vertically (makes it easier to place controls, icons etc in the cells)
             CenterRectUsingSingleLineHeight(ref cellRect);
@@ -265,7 +265,7 @@ namespace OKAssets.Editor
                             case (int)HybridBundlesConsts.BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY:
                                 if (item.data.hasChildren)
                                 {
-                                    foreach (HybridBundlesTreeElement child in item.data.children)
+                                    foreach (OKBundlesTreeElement child in item.data.children)
                                     {
                                         child.SetFolderBundleTypeAndDeepChildren(HybridBundlesConsts.BundlePackageType
                                             .NONE);
@@ -303,7 +303,7 @@ namespace OKAssets.Editor
 
                         if (item.data.hasChildren)
                         {
-                            foreach (HybridBundlesTreeElement child in item.data.children)
+                            foreach (OKBundlesTreeElement child in item.data.children)
                             {
                                 child.SetFolderBundleTagAndDeepChildren(item.data.bundleTag);
                             }
@@ -324,7 +324,7 @@ namespace OKAssets.Editor
 
                         if (item.data.hasChildren)
                         {
-                            foreach (HybridBundlesTreeElement child in item.data.children)
+                            foreach (OKBundlesTreeElement child in item.data.children)
                             {
                                 child.SetFolderBundleLocationAndDeepChildren(item.data.Location);
                             }
@@ -551,7 +551,7 @@ namespace OKAssets.Editor
             "目录下每个文件(带有扩展名)标记为一个单独的Bundle",
         };
 
-        public static string GetFolderBundleNameForEditor(string path, HybridBundlesTreeElement item)
+        public static string GetFolderBundleNameForEditor(string path, OKBundlesTreeElement item)
         {
             if (path.IndexOf('/') == 0)
             {
@@ -563,7 +563,7 @@ namespace OKAssets.Editor
             {
                 case BundlePackageType.NONE:
                     //有可能是递归的 要查找下他的父级
-                    HybridBundlesTreeElement parent = GetParentUnNoneBundleType(item);
+                    OKBundlesTreeElement parent = GetParentUnNoneBundleType(item);
                     if (parent != null)
                     {
                         result = GetFolderBundleNameForEditor(parent.path, parent);
@@ -590,7 +590,7 @@ namespace OKAssets.Editor
             return result;
         }
 
-        public static HybridBundlesTreeElement GetParentUnNoneBundleType(HybridBundlesTreeElement item)
+        public static OKBundlesTreeElement GetParentUnNoneBundleType(OKBundlesTreeElement item)
         {
             if (item.folderBundleType == (int)BundlePackageType.FOLDER_ALL_IN_ONE_RECURSIVELY)
             {
@@ -599,7 +599,7 @@ namespace OKAssets.Editor
 
             if (item.parent != null)
             {
-                return GetParentUnNoneBundleType((HybridBundlesTreeElement)item.parent);
+                return GetParentUnNoneBundleType((OKBundlesTreeElement)item.parent);
             }
 
             return null;

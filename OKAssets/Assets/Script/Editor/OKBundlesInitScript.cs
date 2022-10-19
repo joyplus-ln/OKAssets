@@ -43,7 +43,7 @@ namespace OKAssets.Editor
                                                            BuildAssetBundleOptions.ChunkBasedCompression);
         }
 
-        public static void CreatOkAssetTreeData(bool reCreat = false, MyTreeAsset dataScript = null)
+        public static void CreatOkAssetTreeData(bool reCreat = false, OKTreeAsset dataScript = null)
         {
             string configPath = Application.dataPath.Replace("/Assets", "") + $"/{OKAssetsConst.OKAssetBundleData}";
             if (File.Exists(configPath))
@@ -71,7 +71,7 @@ namespace OKAssets.Editor
                 return;
             }
 
-            EditorUtil.CreatScriptObject<HybridBundlesBuildVersion>(
+            EditorUtil.CreatScriptObject<OKBundlesBuildVersion>(
                 $"Assets/{Util.GetPlatformName()}_{OKAssetsConst.OKAssetBundleVersionData}");
         }
 

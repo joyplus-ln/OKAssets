@@ -6,16 +6,16 @@ using UnityEditor;
 namespace OKAssets.Editor
 {
 
-	[CustomEditor(typeof(MyTreeAsset))]
+	[CustomEditor(typeof(OKTreeAsset))]
 	public class MyTreeAssetEditor : UnityEditor.Editor
 	{
 		MyTreeView m_TreeView;
 		SearchField m_SearchField;
 		const string kSessionStateKeyPrefix = "TVS";
 
-		MyTreeAsset asset
+		OKTreeAsset asset
 		{
-			get { return (MyTreeAsset)target; }
+			get { return (OKTreeAsset)target; }
 		}
 
 		void OnEnable()
@@ -26,7 +26,7 @@ namespace OKAssets.Editor
 			var jsonState = SessionState.GetString(kSessionStateKeyPrefix + asset.GetInstanceID(), "");
 			if (!string.IsNullOrEmpty(jsonState))
 				JsonUtility.FromJsonOverwrite(jsonState, treeViewState);
-			var treeModel = new BaseTreeModel<HybridBundlesTreeElement>(asset.treeElements);
+			var treeModel = new BaseTreeModel<OKBundlesTreeElement>(asset.treeElements);
 			if (!treeModel.HasData())
 			{
 				return;
@@ -111,9 +111,9 @@ namespace OKAssets.Editor
 		}
 
 
-		class MyTreeView : TreeViewWithTreeModel<HybridBundlesTreeElement>
+		class MyTreeView : TreeViewWithTreeModel<OKBundlesTreeElement>
 		{
-			public MyTreeView(TreeViewState state, BaseTreeModel<HybridBundlesTreeElement> model)
+			public MyTreeView(TreeViewState state, BaseTreeModel<OKBundlesTreeElement> model)
 				: base(state, model)
 			{
 				showBorder = true;

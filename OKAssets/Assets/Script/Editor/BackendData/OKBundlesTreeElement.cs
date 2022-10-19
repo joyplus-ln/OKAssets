@@ -6,7 +6,7 @@ using System;
 namespace OKAssets.Editor
 {
 	[Serializable]
-	public class HybridBundlesTreeElement : BaseTreeElement
+	public class OKBundlesTreeElement : BaseTreeElement
 	{
 		[SerializeField]
 		private string _path;
@@ -73,7 +73,7 @@ namespace OKAssets.Editor
 			}
 		}
 
-		public HybridBundlesTreeElement(string name, int depth, int id, string _path) : base(name, depth, id)
+		public OKBundlesTreeElement(string name, int depth, int id, string _path) : base(name, depth, id)
 		{
 			path = _path;
 		}
@@ -83,14 +83,14 @@ namespace OKAssets.Editor
 			folderBundleType = (int)t;
 			if (hasChildren)
 			{
-				foreach (HybridBundlesTreeElement element in children)
+				foreach (OKBundlesTreeElement element in children)
 				{
 					element.SetFolderBundleTypeAndDeepChildren(t);
 				}
 			}
 		}
 
-		public void CopyFrom(HybridBundlesTreeElement source)
+		public void CopyFrom(OKBundlesTreeElement source)
 		{
 
 			path = source.path;
@@ -104,7 +104,7 @@ namespace OKAssets.Editor
 			bundleTag = tag;
 			if (hasChildren)
 			{
-				foreach (HybridBundlesTreeElement element in children)
+				foreach (OKBundlesTreeElement element in children)
 				{
 					element.SetFolderBundleTagAndDeepChildren(tag);
 				}
@@ -116,7 +116,7 @@ namespace OKAssets.Editor
 			Location = location;
 			if (hasChildren)
 			{
-				foreach (HybridBundlesTreeElement element in children)
+				foreach (OKBundlesTreeElement element in children)
 				{
 					element.SetFolderBundleLocationAndDeepChildren(location);
 				}

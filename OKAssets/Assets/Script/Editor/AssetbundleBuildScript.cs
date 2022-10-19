@@ -32,8 +32,8 @@ namespace OKAssets.Editor
             string currCSMD5 = CalcCSharpMD5(paths, files);
             OKBundlesInitScript.CreatOKBundleVersionData();
             string configPath = $"Assets/{Util.GetPlatformName()}_{OKAssetsConst.OKAssetBundleVersionData}";
-            HybridBundlesBuildVersion buildVersions =
-                AssetDatabase.LoadAssetAtPath<HybridBundlesBuildVersion>(configPath);
+            OKBundlesBuildVersion buildVersions =
+                AssetDatabase.LoadAssetAtPath<OKBundlesBuildVersion>(configPath);
 
             Version version = new Version(buildVersions.bundleVersion);
             int build = version.Build;
@@ -70,14 +70,14 @@ namespace OKAssets.Editor
 
 
             AssetDatabase.Refresh();
-            MyTreeAsset m_MyTreeAsset =
-                AssetDatabase.LoadMainAssetAtPath(OKAssetsConst.OKAssetBundleData) as MyTreeAsset;
+            OKTreeAsset mOkTreeAsset =
+                AssetDatabase.LoadMainAssetAtPath(OKAssetsConst.OKAssetBundleData) as OKTreeAsset;
             //Initialize tree
-            BaseTreeElementUtility.ListToTree(m_MyTreeAsset.treeElements);
+            BaseTreeElementUtility.ListToTree(mOkTreeAsset.treeElements);
             Dictionary<string, List<string>> abDict = new Dictionary<string, List<string>>();
-            Dictionary<string, HybridBundlesTreeElement> abItemDictByPath =
-                new Dictionary<string, HybridBundlesTreeElement>();
-            foreach (HybridBundlesTreeElement item in m_MyTreeAsset.treeElements)
+            Dictionary<string, OKBundlesTreeElement> abItemDictByPath =
+                new Dictionary<string, OKBundlesTreeElement>();
+            foreach (OKBundlesTreeElement item in mOkTreeAsset.treeElements)
             {
                 if (item.depth == -1)
                 {
@@ -178,7 +178,7 @@ namespace OKAssets.Editor
 
 
         static void BuildFileIndex(string resPath, List<string> paths, List<string> files,
-            Dictionary<string, HybridBundlesTreeElement> abItemDictByPath)
+            Dictionary<string, OKBundlesTreeElement> abItemDictByPath)
         {
             string output = string.Format("{0}/{1}/{2}/", Application.streamingAssetsPath,
                 OKAssetsConst.ASSETBUNDLE_FOLDER,
@@ -234,7 +234,7 @@ namespace OKAssets.Editor
                 string bundleNameLower = Path.GetFileNameWithoutExtension(fileInfo.Name.ToLower());
                 if (abItemDictByPath.ContainsKey(bundleNameLower))
                 {
-                    HybridBundlesTreeElement hbte = abItemDictByPath[bundleNameLower];
+                    OKBundlesTreeElement hbte = abItemDictByPath[bundleNameLower];
                     if (hbte != null)
                     {
                         fbi.bundleTag = hbte.bundleTag;
@@ -280,7 +280,7 @@ namespace OKAssets.Editor
             }
         }
 
-        static void MoveOnLineBundleOut(Dictionary<string, HybridBundlesTreeElement> abItemDictByPath,
+        static void MoveOnLineBundleOut(Dictionary<string, OKBundlesTreeElement> abItemDictByPath,
             List<string> paths, List<string> files)
         {
             string tempFolder = Path.Combine(Application.dataPath.Replace("Assets", ""),
@@ -301,7 +301,7 @@ namespace OKAssets.Editor
                 string bundleNameLower = Path.GetFileNameWithoutExtension(fileInfo.Name.ToLower());
                 if (abItemDictByPath.ContainsKey(bundleNameLower))
                 {
-                    HybridBundlesTreeElement hbte = abItemDictByPath[bundleNameLower];
+                    OKBundlesTreeElement hbte = abItemDictByPath[bundleNameLower];
                     if (hbte != null && (BundleLocation)hbte.Location == BundleLocation.OnLine)
                     {
                         string abPath = files[i];
