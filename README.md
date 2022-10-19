@@ -9,6 +9,10 @@
 
 ## 快速开始
 
+#### 安装
+
+-**通过Unity PackageManager 添加Git URL安装**
+-**https://github.com/joyplus-ln/OKAssets.git?path=/OKAssets/Assets/Script**
 #### AssetBundle使用
 
 - **初始化**
