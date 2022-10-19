@@ -12,7 +12,7 @@ namespace OKAssets.Editor
 	// The first element of the input list is required to have depth == -1 (the hiddenroot) and the rest to have
 	// depth >= 0 (otherwise an exception will be thrown)
 
-	public class BaseTreeModel<T> where T : OKTreeElement
+	public class OKBaseTreeModel<T> where T : OKTreeElement
 	{
 		IList<T> m_Data;
 		T m_Root;
@@ -25,7 +25,7 @@ namespace OKAssets.Editor
 			get { return m_Data.Count; }
 		}
 
-		public BaseTreeModel(IList<T> data)
+		public OKBaseTreeModel(IList<T> data)
 		{
 			SetData(data);
 		}
@@ -51,7 +51,7 @@ namespace OKAssets.Editor
 
 			m_Data = data;
 			if (m_Data.Count > 0)
-				m_Root = BaseTreeElementUtility.ListToTree(data);
+				m_Root = OKBaseTreeElementUtility.ListToTree(data);
 
 			m_MaxID = m_Data.Max(e => e.id);
 		}
@@ -120,7 +120,7 @@ namespace OKAssets.Editor
 				if (element == m_Root)
 					throw new ArgumentException("It is not allowed to remove the root element");
 
-			var commonAncestors = BaseTreeElementUtility.FindCommonAncestorsWithinList(elements);
+			var commonAncestors = OKBaseTreeElementUtility.FindCommonAncestorsWithinList(elements);
 
 			foreach (var element in commonAncestors)
 			{
@@ -128,7 +128,7 @@ namespace OKAssets.Editor
 				element.parent = null;
 			}
 
-			BaseTreeElementUtility.TreeToList(m_Root, m_Data);
+			OKBaseTreeElementUtility.TreeToList(m_Root, m_Data);
 
 			Changed();
 		}
@@ -150,10 +150,10 @@ namespace OKAssets.Editor
 			{
 				element.parent = parent;
 				element.depth = parent.depth + 1;
-				BaseTreeElementUtility.UpdateDepthValues(element);
+				OKBaseTreeElementUtility.UpdateDepthValues(element);
 			}
 
-			BaseTreeElementUtility.TreeToList(m_Root, m_Data);
+			OKBaseTreeElementUtility.TreeToList(m_Root, m_Data);
 
 			Changed();
 		}
@@ -187,8 +187,8 @@ namespace OKAssets.Editor
 			parent.children.Insert(insertPosition, element);
 			element.parent = parent;
 
-			BaseTreeElementUtility.UpdateDepthValues(parent);
-			BaseTreeElementUtility.TreeToList(m_Root, m_Data);
+			OKBaseTreeElementUtility.UpdateDepthValues(parent);
+			OKBaseTreeElementUtility.TreeToList(m_Root, m_Data);
 
 			Changed();
 		}
@@ -219,8 +219,8 @@ namespace OKAssets.Editor
 			// Insert dragged items under new parent
 			parentElement.children.InsertRange(insertionIndex, elements);
 
-			BaseTreeElementUtility.UpdateDepthValues(root);
-			BaseTreeElementUtility.TreeToList(m_Root, m_Data);
+			OKBaseTreeElementUtility.UpdateDepthValues(root);
+			OKBaseTreeElementUtility.TreeToList(m_Root, m_Data);
 
 			Changed();
 		}

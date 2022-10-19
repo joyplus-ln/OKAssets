@@ -21,26 +21,26 @@ namespace OKAssets.Editor
 
 	internal class TreeViewWithTreeModel<T> : TreeView where T : OKTreeElement
 	{
-		BaseTreeModel<T> m_TreeModel;
+		OKBaseTreeModel<T> m_TreeModel;
 		readonly List<TreeViewItem> m_Rows = new List<TreeViewItem>(100);
 		public event Action treeChanged;
 
-		public BaseTreeModel<T> treeModel { get { return m_TreeModel; } }
+		public OKBaseTreeModel<T> treeModel { get { return m_TreeModel; } }
 		public event Action<IList<TreeViewItem>> beforeDroppingDraggedItems;
 
 
-		public TreeViewWithTreeModel(TreeViewState state, BaseTreeModel<T> model) : base(state)
+		public TreeViewWithTreeModel(TreeViewState state, OKBaseTreeModel<T> model) : base(state)
 		{
 			Init(model);
 		}
 
-		public TreeViewWithTreeModel(TreeViewState state, MultiColumnHeader multiColumnHeader, BaseTreeModel<T> model)
+		public TreeViewWithTreeModel(TreeViewState state, MultiColumnHeader multiColumnHeader, OKBaseTreeModel<T> model)
 			: base(state, multiColumnHeader)
 		{
 			Init(model);
 		}
 
-		void Init(BaseTreeModel<T> model)
+		void Init(OKBaseTreeModel<T> model)
 		{
 			m_TreeModel = model;
 			m_TreeModel.modelChanged += ModelChanged;

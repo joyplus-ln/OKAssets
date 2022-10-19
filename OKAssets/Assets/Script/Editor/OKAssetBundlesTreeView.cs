@@ -14,11 +14,11 @@ namespace OKAssets.Editor
         const float kRowHeights = 20f;
         const float kToggleWidth = 18f;
 
-        private HybridBundlesBuildTag tags
+        private OKBundlesBuildTag tags
         {
             get
             {
-                return AssetDatabase.LoadAssetAtPath<HybridBundlesBuildTag>(
+                return AssetDatabase.LoadAssetAtPath<OKBundlesBuildTag>(
                     $"Assets/{OKAssetsConst.OKAssetBundleTagData}");
             }
         }
@@ -96,7 +96,7 @@ namespace OKAssets.Editor
         }
 
         public OKAssetBundlesTreeView(TreeViewState state, MultiColumnHeader multicolumnHeader,
-            BaseTreeModel<OKBundlesTreeElement> model) : base(state, multicolumnHeader, model)
+            OKBaseTreeModel<OKBundlesTreeElement> model) : base(state, multicolumnHeader, model)
         {
             Assert.AreEqual(m_SortOptions.Length, Enum.GetValues(typeof(MyColumns)).Length,
                 "Ensure number of sort options are in sync with number of MyColumns enum values");

@@ -64,7 +64,7 @@ namespace OKAssets.Editor
 				if (firstInit)
 					multiColumnHeader.ResizeToFit();
 
-				var treeModel = new BaseTreeModel<OKBundlesTreeElement>(GetData());
+				var treeModel = new OKBaseTreeModel<OKBundlesTreeElement>(GetData());
 
 				m_TreeView = new OKAssetBundlesTreeView(m_TreeViewState, multiColumnHeader, treeModel);
 

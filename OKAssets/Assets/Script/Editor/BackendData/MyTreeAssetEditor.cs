@@ -26,7 +26,7 @@ namespace OKAssets.Editor
 			var jsonState = SessionState.GetString(kSessionStateKeyPrefix + asset.GetInstanceID(), "");
 			if (!string.IsNullOrEmpty(jsonState))
 				JsonUtility.FromJsonOverwrite(jsonState, treeViewState);
-			var treeModel = new BaseTreeModel<OKBundlesTreeElement>(asset.treeElements);
+			var treeModel = new OKBaseTreeModel<OKBundlesTreeElement>(asset.treeElements);
 			if (!treeModel.HasData())
 			{
 				return;
@@ -113,7 +113,7 @@ namespace OKAssets.Editor
 
 		class MyTreeView : TreeViewWithTreeModel<OKBundlesTreeElement>
 		{
-			public MyTreeView(TreeViewState state, BaseTreeModel<OKBundlesTreeElement> model)
+			public MyTreeView(TreeViewState state, OKBaseTreeModel<OKBundlesTreeElement> model)
 				: base(state, model)
 			{
 				showBorder = true;

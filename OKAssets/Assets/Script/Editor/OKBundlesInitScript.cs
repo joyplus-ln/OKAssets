@@ -33,7 +33,7 @@ namespace OKAssets.Editor
                 return;
             }
 
-            EditorUtil.CreatScriptObject<OKAssetsConfig>($"Assets/Resources/{OKAssetsConst.CONFIGNAME}");
+            OKEditorUtil.CreatScriptObject<OKAssetsConfig>($"Assets/Resources/{OKAssetsConst.CONFIGNAME}");
         }
 
         [MenuItem("OKAssets/BuildAssetBundle")]
@@ -59,7 +59,7 @@ namespace OKAssets.Editor
                 }
             }
 
-            EditorUtil.CreatScriptObject($"{OKAssetsConst.OKAssetBundleData}", dataScript);
+            OKEditorUtil.CreatScriptObject($"{OKAssetsConst.OKAssetBundleData}", dataScript);
         }
 
         public static void CreatOKBundleVersionData()
@@ -71,7 +71,7 @@ namespace OKAssets.Editor
                 return;
             }
 
-            EditorUtil.CreatScriptObject<OKBundlesBuildVersion>(
+            OKEditorUtil.CreatScriptObject<OKBundlesBuildVersion>(
                 $"Assets/{Util.GetPlatformName()}_{OKAssetsConst.OKAssetBundleVersionData}");
         }
 
@@ -83,7 +83,7 @@ namespace OKAssets.Editor
                 return;
             }
 
-            EditorUtil.CreatScriptObject<HybridBundlesBuildTag>($"Assets/{OKAssetsConst.OKAssetBundleTagData}");
+            OKEditorUtil.CreatScriptObject<OKBundlesBuildTag>($"Assets/{OKAssetsConst.OKAssetBundleTagData}");
         }
     }
 }

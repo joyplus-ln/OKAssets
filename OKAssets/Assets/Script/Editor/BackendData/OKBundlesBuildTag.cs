@@ -7,7 +7,7 @@ using UnityEngine;
 namespace OKAssets.Editor
 {
 	[CreateAssetMenu(fileName = "OKAssetBundlesBuildTagData", menuName = "OKAssetBundlesBuildTagAsset", order = 1)]
-	public class HybridBundlesBuildTag : ScriptableObject
+	public class OKBundlesBuildTag : ScriptableObject
 	{
 		public const string Basic = "basic";
 		public String[] tags = new []{Basic};

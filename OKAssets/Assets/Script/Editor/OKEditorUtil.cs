@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace OKAssets.Editor
 {
-    public class EditorUtil
+    public class OKEditorUtil
     {
 
         public static T CreatScriptObject<T>(string path,T t = null) where T : ScriptableObject

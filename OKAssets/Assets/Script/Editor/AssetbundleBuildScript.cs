@@ -73,7 +73,7 @@ namespace OKAssets.Editor
             OKTreeAsset mOkTreeAsset =
                 AssetDatabase.LoadMainAssetAtPath(OKAssetsConst.OKAssetBundleData) as OKTreeAsset;
             //Initialize tree
-            BaseTreeElementUtility.ListToTree(mOkTreeAsset.treeElements);
+            OKBaseTreeElementUtility.ListToTree(mOkTreeAsset.treeElements);
             Dictionary<string, List<string>> abDict = new Dictionary<string, List<string>>();
             Dictionary<string, OKBundlesTreeElement> abItemDictByPath =
                 new Dictionary<string, OKBundlesTreeElement>();
@@ -213,7 +213,7 @@ namespace OKAssets.Editor
                 //这样的话，GResManager加载的时候就能知道，这个文件本地目前没有
                 //如果游戏过程中下载过，那么会改成STORAGE
                 fbi.location = BundleStorageLocation.STREAMINGASSETS;
-                fbi.bundleTag = HybridBundlesBuildTag.Basic;
+                fbi.bundleTag = OKBundlesBuildTag.Basic;
 
                 if (fileInfo.Name.Contains(".ab"))
                 {

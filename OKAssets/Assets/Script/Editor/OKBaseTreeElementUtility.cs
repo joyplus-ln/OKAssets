@@ -8,7 +8,7 @@ namespace OKAssets.Editor
 	// TreeElementUtility and TreeElement are useful helper classes for backend tree data structures.
 	// See tests at the bottom for examples of how to use.
 
-	public static class BaseTreeElementUtility
+	public static class OKBaseTreeElementUtility
 	{
 		public static void TreeToList<T>(T root, IList<T> result) where T : OKTreeElement
 		{
