@@ -1,0 +1,16 @@
+{
+    "name": "OKAssets.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:7106ac0698e3eb340a669fcb7b1511c3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
