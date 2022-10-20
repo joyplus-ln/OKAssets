@@ -147,7 +147,7 @@ namespace OKAssets.Editor
 
         static void BuildVersionsFile(string resPath, string verionStr)
         {
-            string newFilePath = resPath + "buildversion.txt";
+            string newFilePath = resPath + OKAssetsConst.FILENAME_BUILDVERSION_TXT;
             if (File.Exists(newFilePath)) File.Delete(newFilePath);
             FileStream fs = new FileStream(newFilePath, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs);
@@ -158,17 +158,17 @@ namespace OKAssets.Editor
 
         static void BuildBundleIndex(string resPath, Dictionary<string, List<string>> abDict)
         {
-            string newFilePath = resPath + "bundles_table.txt";
+            string newFilePath = resPath + OKAssetsConst.BundleMapFlieName;
             if (File.Exists(newFilePath)) File.Delete(newFilePath);
 
-            string prefix = "Assets/Bundles/";
+            
             FileStream fs = new FileStream(newFilePath, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs);
             foreach (string key in abDict.Keys)
             {
                 foreach (string path in abDict[key])
                 {
-                    sw.WriteLine(path.Substring(path.IndexOf(prefix) + prefix.Length) + "|" + key);
+                    sw.WriteLine(path.Substring(path.IndexOf(OKAssetsConst.ASSET_PATH_PREFIX) + OKAssetsConst.ASSET_PATH_PREFIX.Length) + "|" + key);
                 }
             }
 
@@ -183,8 +183,8 @@ namespace OKAssets.Editor
             string output = string.Format("{0}/{1}/{2}/", Application.streamingAssetsPath,
                 OKAssetsConst.ASSETBUNDLE_FOLDER,
                 Util.GetPlatformName());
-            string newFilePath = resPath + "bundleFiles.txt";
-            string streamingFilePath = output + "/bundleFiles.txt";
+            string newFilePath = resPath + OKAssetsConst.FILENAME_FILES_TXT;
+            string streamingFilePath = output + "/" + OKAssetsConst.FILENAME_FILES_TXT;
             string hashExName = "_hash";
             if (File.Exists(newFilePath)) File.Delete(newFilePath);
             if (File.Exists(streamingFilePath)) File.Delete(streamingFilePath);
