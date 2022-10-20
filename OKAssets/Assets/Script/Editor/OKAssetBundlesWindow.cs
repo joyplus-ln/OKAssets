@@ -95,13 +95,8 @@ namespace OKAssets.Editor
 
 		void SaveData()
 		{
-			// AssetDatabase.DeleteAsset(OKAssetsConst.OKAssetBundleData);
-			// AssetDatabase.Refresh();
 			OKTreeAsset dataScript = ScriptableObject.CreateInstance<OKTreeAsset>();
 			dataScript.treeElements = mOkTreeAsset.treeElements;
-			// AssetDatabase.CreateAsset(dataScript, OKAssetsConst.OKAssetBundleData);
-			// AssetDatabase.SaveAssets();
-			// AssetDatabase.Refresh();
 			OKBundlesInitScript.CreatOkAssetTreeData(true,dataScript);
 		}
 

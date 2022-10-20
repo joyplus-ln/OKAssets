@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loadModel: 0
   appName: OKAssetsDemo
-  ResFolderName: Res
+  ResFolderName: Bundles
   gameMode: 0
   CDN_DEBUGFOLDER: debug
   CDN_RELEASEFOLDER: release

@@ -161,7 +161,7 @@ namespace OKAssets.Editor
             string newFilePath = resPath + "bundles_table.txt";
             if (File.Exists(newFilePath)) File.Delete(newFilePath);
 
-            string prefix = "Assets/Res/";
+            string prefix = "Assets/Bundles/";
             FileStream fs = new FileStream(newFilePath, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs);
             foreach (string key in abDict.Keys)

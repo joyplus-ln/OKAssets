@@ -13,33 +13,13 @@ MonoBehaviour:
   m_Name: OKAssetBundleData
   m_EditorClassIdentifier: 
   treeElements:
-  - m_ID: 524863204
+  - m_ID: -949951044
     m_Name: Root
     m_Depth: -1
-    _path: C:/GitProject/OKAssets/OKAssets/Assets/Res
+    _path: C:/GitProject/OKAssets/OKAssets/Assets/Bundles
     isFolder: 0
     isNew: 0
     _folderBundleType: 0
     bundleName: 
     _bundleTag: 
-    _location: 0
-  - m_ID: -169929453
-    m_Name: Atlas
-    m_Depth: 0
-    _path: /Atlas
-    isFolder: 1
-    isNew: 0
-    _folderBundleType: 0
-    bundleName: 
-    _bundleTag: 
-    _location: 0
-  - m_ID: -913428508
-    m_Name: Prefab
-    m_Depth: 0
-    _path: /Prefab
-    isFolder: 1
-    isNew: 0
-    _folderBundleType: 1
-    bundleName: prefab_{filename}
-    _bundleTag: basic
     _location: 0

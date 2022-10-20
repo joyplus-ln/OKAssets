@@ -15,7 +15,7 @@ namespace OKAssets
         public const string BundleMapFlieName = "BundleMapFile.txt";
         public const string ASSETBUNDLE_FOLDER = "AssetBundles";
         public const string VARIANT = ".ab";
-        public const string ASSET_PATH_PREFIX = "Assets/Res/";
+        public const string ASSET_PATH_PREFIX = "Assets/Bundles/";
         public const string OKAssetBundleData = "Assets/OKAssetBundleData.asset";
         public const string OKAssetBundleTagData = "OKAssetBundleTagData.asset";
         public const string OKAssetBundleVersionData = "OKAssetBundleVersionData.asset";
