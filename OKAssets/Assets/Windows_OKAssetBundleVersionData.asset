@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d17626c1f7d94f4eb5123db7dc5c1c1, type: 3}
   m_Name: Windows_OKAssetBundleVersionData
   m_EditorClassIdentifier: 
-  bundleVersion: 0.0.0.0
-  csharpMD5: adfasfsd
+  bundleVersion: 0.0.1.6
+  csharpMD5: d41d8cd98f00b204e9800998ecf8427e

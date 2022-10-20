@@ -1,4 +1,4 @@
-buildversion.txt|buildversion.txt|10|2db30926050b83b46e8b7249fc130693|1|basic|0
-bundles_table.txt|bundles_table.txt|27|bb52aab2183240c6bad9ced7839ee01f|1|basic|0
-prefab..ab|prefab._hash545bc25e740428b66458192b1cd6f4a1.ab|43881|545bc25e740428b66458192b1cd6f4a1|1|basic|0
-Windows|Windows|1574|be164fc629f6043ea68870663771e504|1|basic|0
+buildversion.txt|buildversion.txt|9|343edf4c6ba1a3be6eeac78527c8b423|1|basic|0
+bundles_table.txt|bundles_table.txt|32|026bbfeb9306ec59ade676b5a62be6ab|1|basic|0
+prefab_cube..ab|prefab_cube._hashfde19f1161c58bf3c5907ef684f3f3fb.ab|46034|fde19f1161c58bf3c5907ef684f3f3fb|1|basic|0
+Windows|Windows|1587|d06e4eec70c823a9489aa479de442a3f|1|basic|0

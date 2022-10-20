@@ -1,1 +1,1 @@
-Prefab/Cube.prefab|prefab
+Prefab/Cube.prefab|prefab_cube

@@ -84,7 +84,7 @@ namespace OKAssets.Editor
                     continue;
                 }
 
-                string fullPath = Application.dataPath + $"/{OKAssetsConst.okConfig.ResFolderName}" + item.path;
+                string fullPath = Application.dataPath + $"/{OKAssetsConst.BUNDLEFOLDER}/" + item.path;
                 fullPath = fullPath.Replace(Path.DirectorySeparatorChar, '/');
 
                 DirectoryInfo folder = new DirectoryInfo(fullPath);

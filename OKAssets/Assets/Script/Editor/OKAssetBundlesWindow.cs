@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
 using System;
 using UnityEditor.IMGUI.Controls;
 using System.Collections.Generic;
-using System.IO;
 
 namespace OKAssets.Editor
 {

@@ -20,13 +20,15 @@ namespace OKAssets.Editor
 			}
 			ClearOldFolderIsNewFlag();
 			List<OKBundlesTreeElement> list = new List<OKBundlesTreeElement>();
-			string rootPath = Application.dataPath + $"/{OKAssetsConst.okConfig.ResFolderName}";
+			string rootPath = Application.dataPath + $"/{OKAssetsConst.BUNDLEFOLDER}";
 			if (!Directory.Exists(rootPath))
 			{
 				Directory.CreateDirectory(rootPath);
 			}
+			Debug.Log(rootPath);
 			int depth = -1;
 			var root = new OKBundlesTreeElement("Root", depth, GenerateIntID(), rootPath);
+			Debug.LogError(root.path);
 			list.Add(root);
 			IterFiles(list, rootPath, depth + 1);
 			treeElements = list;
@@ -96,7 +98,7 @@ namespace OKAssets.Editor
 		//   such as D:\\taro\nclient\Assets\Res\UI -> \UI
 		private string FullPathToBundlePath(string fullPath)
 		{
-			string rootPath = Application.dataPath + "/Res";
+			string rootPath = OKAssetsConst.ASSET_PATH_PREFIX;
 			string path = fullPath.Replace('\\', '/');
 			path = path.Substring(path.IndexOf(rootPath) + rootPath.Length);
 			return path;

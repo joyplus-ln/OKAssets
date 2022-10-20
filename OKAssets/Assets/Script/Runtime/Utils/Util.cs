@@ -74,7 +74,7 @@ namespace OKAssets
 
                 if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
                 {
-                    return Application.dataPath + "/" + OKAssetsConst.okConfig.ResFolderName + "/";
+                    return Application.dataPath + "/" + OKAssetsConst.BUNDLEFOLDER + "/";
                 }
 
                 return "c:/" + game + "/";
@@ -193,7 +193,7 @@ namespace OKAssets
                     path = Application.dataPath + "/Raw/";
                     break;
                 default:
-                    path = Application.dataPath + "/" + OKAssetsConst.okConfig.ResFolderName + "/";
+                    path = Application.dataPath + "/" + OKAssetsConst.BUNDLEFOLDER + "/";
                     break;
             }
 

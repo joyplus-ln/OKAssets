@@ -20,6 +20,7 @@ namespace OKAssets
         public const string OKAssetBundleTagData = "OKAssetBundleTagData.asset";
         public const string OKAssetBundleVersionData = "OKAssetBundleVersionData.asset";
         public const string ATLASTAG = "Atlas";
+        public const string BUNDLEFOLDER = "Bundles";
         
         public const string FILENAME_FILES_TXT = "bundleFiles.txt";
         public const string FILENAME_BUILDVERSION_TXT = "buildversion.txt";
