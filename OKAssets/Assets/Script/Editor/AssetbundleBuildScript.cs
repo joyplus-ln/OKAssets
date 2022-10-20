@@ -213,7 +213,7 @@ namespace OKAssets.Editor
                 //这样的话，GResManager加载的时候就能知道，这个文件本地目前没有
                 //如果游戏过程中下载过，那么会改成STORAGE
                 fbi.location = BundleStorageLocation.STREAMINGASSETS;
-                fbi.bundleTag = OKBundlesBuildTag.Basic;
+                fbi.bundleTag = OKAssetsConst.Basic;
 
                 if (fileInfo.Name.Contains(".ab"))
                 {

@@ -14,7 +14,6 @@ namespace OKAssets.Editor
         public static void InitConfig()
         {
             CreatOkBundleConfig();
-            CreatOkAssetTreeData();
             CreatOKBundleVersionData();
             CreatOKBundleTagData();
         }
@@ -57,6 +56,12 @@ namespace OKAssets.Editor
                 {
                     return;
                 }
+            }
+
+            if (dataScript == null)
+            {
+                dataScript = new OKTreeAsset();
+                dataScript.treeElements = new List<OKBundlesTreeElement>();
             }
 
             OKEditorUtil.CreatScriptObject($"{OKAssetsConst.OKAssetBundleData}", dataScript);

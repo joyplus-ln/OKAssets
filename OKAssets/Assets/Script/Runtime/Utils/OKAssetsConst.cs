@@ -24,6 +24,7 @@ namespace OKAssets
         public const string FILENAME_FILES_TXT = "bundleFiles.txt";
         public const string FILENAME_BUILDVERSION_TXT = "buildversion.txt";
         public const string FILENAME_BUNDLESTABLE_TXT = "bundles_table.txt";
+        public const string Basic = "basic";
 
     }
 
