@@ -25,10 +25,8 @@ namespace OKAssets.Editor
 			{
 				Directory.CreateDirectory(rootPath);
 			}
-			Debug.Log(rootPath);
 			int depth = -1;
 			var root = new OKBundlesTreeElement("Root", depth, GenerateIntID(), rootPath);
-			Debug.LogError(root.path);
 			list.Add(root);
 			IterFiles(list, rootPath, depth + 1);
 			treeElements = list;
