@@ -13,7 +13,7 @@ namespace OKAssets
         internal static void CheckExtractResource(Action complete)
         {
             //编辑器模式下，直接启动游戏
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 return;
             }

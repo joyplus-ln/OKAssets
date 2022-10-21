@@ -12,6 +12,14 @@ namespace OKAssets
 {
     public class Util
     {
+
+        public static bool IsOnLineModel()
+        {
+#if !UNITY_EDITOR
+            return true;
+#endif
+            return OKAssetsConst.OkConfig.loadModel == ResLoadMode.OnLineModel;
+        }
         /// <summary>
         /// 计算字符串的MD5值
         /// </summary>
@@ -66,13 +74,13 @@ namespace OKAssets
         {
             get
             {
-                string game = OKAssetsConst.okConfig.appName;
-                if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+                string game = OKAssetsConst.OkConfig.appName;
+                if (!Util.IsOnLineModel())
                 {
                     return Application.persistentDataPath + "/" + game + "/";
                 }
 
-                if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+                if (!Util.IsOnLineModel())
                 {
                     return Application.dataPath + "/";
                 }
@@ -85,12 +93,12 @@ namespace OKAssets
         {
             get
             {
-                string game = OKAssetsConst.okConfig.appName;
+                string game = OKAssetsConst.OkConfig.appName;
                 if (Application.isMobilePlatform)
                 {
                     return Application.persistentDataPath + "/" + game + "/";
                 }
-                if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+                if (!Util.IsOnLineModel())
                 {
                     return Application.dataPath + "/StreamingAssets/";
                 }

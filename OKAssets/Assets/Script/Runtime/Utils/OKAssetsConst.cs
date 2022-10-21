@@ -4,7 +4,7 @@ namespace OKAssets
 {
     public class OKAssetsConst
     {
-        public static OKAssetsConfig okConfig
+        public static OKAssetsConfig OkConfig
         {
             get
             {

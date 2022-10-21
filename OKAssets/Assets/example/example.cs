@@ -10,11 +10,26 @@ public class example : MonoBehaviour
     {
         OKAsset.GetInstance().Init(() =>
         {
-            OKAsset.GetInstance().CheckUpdate("http://49.234.15.140:8688/",
+            OKAsset.GetInstance().CheckUpdate("http://49.234.15.140:8688/debug/A",
                 (list, size) =>
                 {
-                    Debug.LogError("inited");
-                    GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("PrefabB/Cube.prefab"));
+                    if (list.Length > 0)
+                    {
+                        OKAsset.GetInstance().DownLoadDiffBundles(list, (x) =>
+                        {
+                            Debug.LogError("ok" + x);
+                        }, (list) =>
+                        {
+                            Debug.LogError("error" + list.Count);
+                        });
+                    }
+                    else
+                    {
+                        Debug.LogError("inited");
+                        GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("PrefabB/Cube.prefab"));
+                    }
+                   
+                   
                 }, () => {  Debug.LogError("inited error");
                     GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("PrefabB/Cube.prefab")); });
         });

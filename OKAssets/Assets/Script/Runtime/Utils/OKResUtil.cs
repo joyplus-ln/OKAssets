@@ -42,7 +42,7 @@ namespace OKAssets
         internal static void LoadBundlesInfo()
         {
             //解析files.txt获取fileInfo
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+            if (Util.IsOnLineModel())
             {
                 string[] files = File.ReadAllLines(Util.GetBundlesInfoConfigPersistentDataPath());
                 for (int i = 0; i < files.Length; i++)
@@ -108,7 +108,7 @@ namespace OKAssets
             Dictionary<string, BundleInfo> _cdnBundlesInfo,
             OKAssetBundleLoader loader)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+            if (!Util.IsOnLineModel())
                 return;
             if (loader == null)
                 return;
@@ -134,7 +134,7 @@ namespace OKAssets
 
         public static void WriteBundleToStorageAndUpdateBundleInfo(string name, OKAssetBundleLoader loader)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+            if (!Util.IsOnLineModel())
                 return;
             if (loader == null)
                 return;
@@ -192,7 +192,7 @@ namespace OKAssets
 
         internal static AssetBundleManifest LoadManifest()
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 return null;
             }
@@ -247,7 +247,7 @@ namespace OKAssets
 
         internal static string GetAssetBundleStoragePath()
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 return Util.DataPath;
             }

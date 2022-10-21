@@ -78,6 +78,10 @@ namespace OKAssets
             get { return _storageBundlesInfo; }
         }
 
+        public Dictionary<string, BundleInfo> CDNBundlesInfo
+        {
+            get { return _cdnBundlesInfo; }
+        }
         public static OKAsset GetInstance()
         {
             if (_instance == null)
@@ -136,7 +140,7 @@ namespace OKAssets
         public void CheckUpdate(string URL, OnCompareCDNResult loadSuccessCallBack,
             Action loadErrorCallBack)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 loadSuccessCallBack?.Invoke(new BundleInfo[] { }, 0);
                 return;
@@ -223,7 +227,7 @@ namespace OKAssets
         /// </summary>
         private void LoadAndWarmUpShaderBundle()
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+            if (Util.IsOnLineModel())
             {
                 ShaderVariantCollection svc = LoadShaderVariantCollection("Shader/CustomShaderVariants.shadervariants");
                 if (svc != null && !svc.isWarmedUp)
@@ -413,7 +417,7 @@ namespace OKAssets
 
         public AssetBundle LoadAssetBundle(string name)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 return null;
             }
@@ -475,7 +479,7 @@ namespace OKAssets
 
         public void UnloadAssetBundle(string assetPath)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
                 return;
             }
@@ -535,7 +539,7 @@ namespace OKAssets
         public void LoadAssetAsync(string assetPath, OnLoadAssetCompleteDelegate onLoadItemComplete = null,
             bool autoLoadDependencies = true)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
@@ -588,7 +592,7 @@ namespace OKAssets
 
         public Object LoadAsset(string assetPath, bool autoLoadDependencies = true)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
@@ -631,7 +635,7 @@ namespace OKAssets
 
         public void LoadScene(string assetPath, bool autoLoadDependencies = true)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
 #if UNITY_EDITOR
                 UnityEngine.Object target =
@@ -655,7 +659,7 @@ namespace OKAssets
         public void LoadAllAssetAsync(string assetPath, OnLoadAllAssetCompleteDelegate onLoadItemComplete = null,
             bool autoLoadDependencies = true)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
 #if UNITY_EDITOR
                 UnityEngine.Object[] targets =
@@ -708,7 +712,7 @@ namespace OKAssets
 
         public Object[] LoadAllAsset(string assetPath, bool autoLoadDependencies = true)
         {
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+            if (!Util.IsOnLineModel())
             {
 #if UNITY_EDITOR
                 UnityEngine.Object[] targets =

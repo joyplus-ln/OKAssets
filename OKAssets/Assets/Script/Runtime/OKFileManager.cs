@@ -87,7 +87,7 @@ namespace OKAssets
                     BundleInfo cdnBundleInfo = new BundleInfo();
                     cdnBundleInfo.Parse(cdnFile);
                     //解析的时候顺便放入本地存一份CDN上files.txt信息
-                    OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().StorageBundlesInfo, cdnBundleInfo);
+                    OKResUtil.UpdateBundleInfo(OKAsset.GetInstance().CDNBundlesInfo, cdnBundleInfo);
                     bool hasDiff = false;
                     //获取目前本地的
                     BundleInfo oldBundleInfo =OKResUtil.GetBundleInfo(cdnBundleInfo.name);
