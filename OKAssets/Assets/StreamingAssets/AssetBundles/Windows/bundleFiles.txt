@@ -1,4 +1,5 @@
-buildversion.txt|buildversion.txt|10|adc5cee46c851eb95960041d1ed05960|1|basic|0|
-prefabb.ab|prefabb_hash53319b23da86bdcba26e2b2f743ce1a8.ab|46419|53319b23da86bdcba26e2b2f743ce1a8|1|basic|0|fFByZWZhYkIvQ3ViZS5wcmVmYWJ8UHJlZmFiQi9TcGhlcmUucHJlZmFi
+buildversion.txt|buildversion.txt|10|2a0fbad89599b977400a4c1cb2973f74|1|basic|0|
+prefabb.ab|prefabb_hashdbbeb404fea1511c2762f84ff569a16e.ab|46031|dbbeb404fea1511c2762f84ff569a16e|1|basic|0|fFByZWZhYkIvQ3ViZS5wcmVmYWI=
 prefab_cubeb.ab|prefab_cubeb_hash47cca2bd61355e0eeecd86fb3765e060.ab|45797|47cca2bd61355e0eeecd86fb3765e060|1|basic|0|fFByZWZhYi9DdWJlQi5wcmVmYWI=
-Windows|Windows|1618|5dc2b996989a2baad3fc02570d6af6b8|1|basic|0|
+prefab_sphere.ab|prefab_sphere_hash5adde200001a6bafa16a24bbd0c2c3e6.ab|45780|5adde200001a6bafa16a24bbd0c2c3e6|1|basic|0|fFByZWZhYi9TcGhlcmUucHJlZmFi
+Windows|Windows|1658|e1bf7bf8ef256bad773e5b53c7cd6041|1|basic|0|

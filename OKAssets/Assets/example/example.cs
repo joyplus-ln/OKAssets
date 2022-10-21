@@ -15,6 +15,7 @@ public class example : MonoBehaviour
                 {
                     if (list.Length > 0)
                     {
+                        Debug.LogError("xuyaoxiazai");
                         OKAsset.GetInstance().DownLoadDiffBundles(list, (x) =>
                         {
                             Debug.LogError("ok" + x);
@@ -26,12 +27,12 @@ public class example : MonoBehaviour
                     else
                     {
                         Debug.LogError("inited");
-                        GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("PrefabB/Cube.prefab"));
+                        GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("Prefab/Sphere.prefab"));
                     }
                    
                    
                 }, () => {  Debug.LogError("inited error");
-                    GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("PrefabB/Cube.prefab")); });
+                    GameObject.Instantiate(OKAsset.GetInstance().LoadPrefab("Prefab/Sphere.prefab")); });
         });
 
     }
