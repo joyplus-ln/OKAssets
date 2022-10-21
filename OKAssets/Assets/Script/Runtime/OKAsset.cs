@@ -87,6 +87,7 @@ namespace OKAssets
             if (_instance == null)
             {
                 GameObject obj = new GameObject("OKAsset");
+                DontDestroyOnLoad(obj);
                 _instance = obj.AddComponent<OKAsset>();
                 OKTimer.Inatance.Add(_instance);
             }
