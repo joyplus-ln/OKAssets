@@ -75,7 +75,7 @@ namespace OKAssets
             get
             {
                 string game = OKAssetsConst.OkConfig.appName;
-                if (!Util.IsOnLineModel())
+                if (Util.IsOnLineModel())
                 {
                     return Application.persistentDataPath + "/" + game + "/";
                 }
