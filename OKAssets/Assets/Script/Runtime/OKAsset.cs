@@ -72,6 +72,9 @@ namespace OKAssets
         private static OKAsset _instance;
         private bool initialized = false;
         private bool hotUpdate = false;
+        
+        
+        public bool DebugModel { get; set; }
 
         public Dictionary<string, BundleInfo> StorageBundlesInfo
         {
@@ -100,6 +103,11 @@ namespace OKAssets
             OKTimer.Inatance.Update();
         }
 
+
+        public void SetDebugModel()
+        {
+            DebugModel = true;
+        }
         /// <summary>
         /// 初始化
         /// </summary>
@@ -1163,6 +1171,13 @@ namespace OKAssets
             string abName;
             if (!bundleTable.TryGetValue(path, out abName))
             {
+                if (DebugModel)
+                {
+                    foreach (string bundleTableKey in bundleTable.Keys)
+                    {
+                        Debug.Log($"{bundleTableKey}-{bundleTable[bundleTableKey]}");
+                    }
+                }
                 Debug.LogWarning(string.Format("通过{0}查找的AssetBundle不存在", path));
             }
 
