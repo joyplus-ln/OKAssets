@@ -74,18 +74,7 @@ namespace OKAssets
                 {
                     return 0;
                 }
-
-                //下载速度本身就不固定，计算最近0.5秒的平均值
-                // if (Time.time - _currentTime >= 1)
-                // {
-                //     _cacheRate = (LoadedBytes - _cacheLoadByte) / (Time.time - _currentTime);
-                //     _cacheLoadByte = LoadedBytes;
-                //     _currentTime = Time.time;
-                // }
-
                 float rate = LoadedBytes / LoadTime;
-
-                //return _cacheRate == Double.NaN ? 0 : _cacheRate;
                 return rate;
             }
         }
