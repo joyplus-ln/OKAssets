@@ -129,17 +129,16 @@ namespace OKAssets.Editor
             {
                 AssetBundleBuild abb = new AssetBundleBuild();
                 abb.assetBundleName = key;
-                abb.assetBundleVariant = OKAssetsConst.VARIANT;
+                abb.assetBundleVariant = OKAssetsConst.VARIANT.Replace(".","");
                 abb.assetNames = abDict[key].ToArray();
                 abbList.Add(abb);
             }
 
             BuildPipeline.BuildAssetBundles(output, abbList.ToArray(), buildOptions,
                 EditorUserBuildSettings.activeBuildTarget);
-            BuildBundleIndex(output, abDict);
             Debug.Log("BuildVersion:" + buildVersions.bundleVersion);
             BuildVersionsFile(output, buildVersions.bundleVersion);
-            BuildFileIndex(output, paths, files, abItemDictByPath);
+            BuildFileIndex(output, paths, files, abItemDictByPath,abDict);
             //MoveManifestFilesToTempFolder();
             MoveOnLineBundleOut(abItemDictByPath, paths, files);
             AssetDatabase.Refresh();
@@ -155,30 +154,9 @@ namespace OKAssets.Editor
             sw.Close();
             fs.Close();
         }
-
-        static void BuildBundleIndex(string resPath, Dictionary<string, List<string>> abDict)
-        {
-            string newFilePath = resPath + OKAssetsConst.BundleMapFlieName;
-            if (File.Exists(newFilePath)) File.Delete(newFilePath);
-
-            
-            FileStream fs = new FileStream(newFilePath, FileMode.CreateNew);
-            StreamWriter sw = new StreamWriter(fs);
-            foreach (string key in abDict.Keys)
-            {
-                foreach (string path in abDict[key])
-                {
-                    sw.WriteLine(path.Substring(path.IndexOf(OKAssetsConst.ASSET_PATH_PREFIX) + OKAssetsConst.ASSET_PATH_PREFIX.Length) + "|" + key);
-                }
-            }
-
-            sw.Close();
-            fs.Close();
-        }
-
-
+        
         static void BuildFileIndex(string resPath, List<string> paths, List<string> files,
-            Dictionary<string, OKBundlesTreeElement> abItemDictByPath)
+            Dictionary<string, OKBundlesTreeElement> abItemDictByPath,Dictionary<string, List<string>> abDict)
         {
             string output = string.Format("{0}/{1}/{2}/", Application.streamingAssetsPath,
                 OKAssetsConst.ASSETBUNDLE_FOLDER,
@@ -214,7 +192,11 @@ namespace OKAssets.Editor
                 //如果游戏过程中下载过，那么会改成STORAGE
                 fbi.location = BundleStorageLocation.STREAMINGASSETS;
                 fbi.bundleTag = OKAssetsConst.Basic;
-
+                List<string> bundles = new List<string>();
+                if ( abDict.TryGetValue(fbi.name.Replace(OKAssetsConst.VARIANT,"") , out bundles))
+                {
+                    fbi.bundles = bundles;
+                }
                 if (fileInfo.Name.Contains(".ab"))
                 {
                     int index = fileInfo.Name.LastIndexOf('.');
@@ -259,27 +241,7 @@ namespace OKAssets.Editor
             ssw.Close();
             sfs.Close();
         }
-
-        static void MoveManifestFilesToTempFolder()
-        {
-            string output = string.Format("{0}/{1}/{2}/", Application.streamingAssetsPath,
-                OKAssetsConst.ASSETBUNDLE_FOLDER,
-                Util.GetPlatformName());
-            string tempFolder = Path.Combine(Application.dataPath.Replace("Assets", ""), "TempManifests");
-            if (Directory.Exists(tempFolder))
-            {
-                Directory.Delete(tempFolder, true);
-            }
-
-            Directory.CreateDirectory(tempFolder);
-            //把.manifest的文件从output文件夹移动到外面的临时文件夹中
-            string[] manifestFilesPath = Directory.GetFiles(output, "*.manifest");
-            foreach (string mffp in manifestFilesPath)
-            {
-                Directory.Move(mffp, Path.Combine(tempFolder, Path.GetFileName(mffp)));
-            }
-        }
-
+        
         static void MoveOnLineBundleOut(Dictionary<string, OKBundlesTreeElement> abItemDictByPath,
             List<string> paths, List<string> files)
         {

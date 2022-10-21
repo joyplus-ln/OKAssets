@@ -90,7 +90,7 @@ namespace OKAssets
             _isLoading = false;
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             if (_bundleRequest == null)
             {

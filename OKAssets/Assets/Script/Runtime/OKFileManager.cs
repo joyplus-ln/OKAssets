@@ -66,7 +66,7 @@ namespace OKAssets
             okLoaderQueue.Load();
         }
         
-        internal static void CompareFiles(string cdnFilesURL, FileCompare.OnCompareCDNResult onCompareResult)
+        internal static void CompareFiles(string cdnFilesURL, OKAsset.OnCompareCDNResult onCompareResult)
         {
             List<BundleInfo> diffFilesInfoList = new List<BundleInfo>();
             long totalByteSize = 0;

@@ -74,9 +74,31 @@ namespace OKAssets
 
                 if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
                 {
-                    return Application.dataPath + "/" + OKAssetsConst.BUNDLEFOLDER + "/";
+                    return Application.dataPath + "/";
                 }
 
+                return "c:/" + game + "/";
+            }
+        }
+
+        public static string GetStreamingPath
+        {
+            get
+            {
+                string game = OKAssetsConst.okConfig.appName;
+                if (Application.isMobilePlatform)
+                {
+                    return Application.persistentDataPath + "/" + game + "/";
+                }
+                if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
+                {
+                    return Application.dataPath + "/StreamingAssets/";
+                }
+                if (Application.platform == RuntimePlatform.OSXEditor)
+                {
+                    int i = Application.dataPath.LastIndexOf('/');
+                    return Application.dataPath.Substring(0, i + 1) + game + "/";
+                }
                 return "c:/" + game + "/";
             }
         }
@@ -228,17 +250,7 @@ namespace OKAssets
         {
             return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUILDVERSION_TXT);
         }
-
-        public static string GetBundlesTableConfigStreamingAssetsPath()
-        {
-            return Path.Combine(GetAssetBundleStreamingAssetsPath(),
-                OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
-        }
-
-        public static string GetBundlesTableConfigPersistentDataPath()
-        {
-            return Path.Combine(Util.DataPath, OKAssetsConst.FILENAME_BUNDLESTABLE_TXT);
-        }
+        
 
     }
 }

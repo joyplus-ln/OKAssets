@@ -87,7 +87,7 @@ namespace OKAssets
             }
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             if (_operation == null)
             {

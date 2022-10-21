@@ -1,4 +1,9 @@
-﻿namespace OKAssets
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+
+namespace OKAssets
 {
     public class BundleInfo
     {
@@ -8,12 +13,13 @@
         public BundleStorageLocation location = BundleStorageLocation.NONE;
         public string bundleTag = "";
         public string nameWithHash = "";
+        public List<string> bundles = new List<string>();
         public BundleLocation loactionType = BundleLocation.Local;
 
         public void Parse(string s)
         {
             string[] fs = s.Split('|');
-            if (fs.Length < 7)
+            if (fs.Length < 8)
             {
                 return;
             }
@@ -31,7 +37,7 @@
             int _location = 0;
             if (int.TryParse(fs[4], out _location))
             {
-                location = (BundleStorageLocation) _location;
+                location = (BundleStorageLocation)_location;
             }
 
             bundleTag = fs[5];
@@ -39,8 +45,25 @@
             int _locationType = 0;
             if (int.TryParse(fs[6], out _locationType))
             {
-                loactionType = (BundleLocation) _locationType;
+                loactionType = (BundleLocation)_locationType;
             }
+
+            List<string> bundleList = new List<string>();
+            if (!string.IsNullOrEmpty(fs[7]))
+            {
+                byte[] bytes = Convert.FromBase64String(fs[7]);
+                string[] list = Encoding.Default.GetString(bytes).Split('|');
+                for (int i = 0; i < list.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(list[i]))
+                    {
+                        bundleList.Add(list[i]);
+                    }
+                }
+
+                bundles = bundleList;
+            }
+
         }
 
         public void Update(BundleInfo newInfo)
@@ -56,9 +79,17 @@
 
         public string Output()
         {
-            return name + "|" + nameWithHash + "|" + byteSize + "|" + crcOrMD5Hash + "|" + (int) location + "|" +
+            string bundleStr = "";
+            for (int i = 0; i < bundles.Count; i++)
+            {
+                bundleStr = $"{bundleStr}|{bundles[i].Replace(OKAssetsConst.ASSET_PATH_PREFIX,"")}";
+            }
+
+            byte[] bytes = Encoding.Default.GetBytes(bundleStr);
+            string mappingStr = Convert.ToBase64String(bytes);
+            return name + "|" + nameWithHash + "|" + byteSize + "|" + crcOrMD5Hash + "|" + (int)location + "|" +
                    bundleTag + "|" +
-                   (int) loactionType;
+                   (int)loactionType + "|" + mappingStr;
         }
     }
 }

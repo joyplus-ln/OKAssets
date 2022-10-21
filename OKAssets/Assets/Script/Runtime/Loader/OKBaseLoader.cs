@@ -146,6 +146,7 @@ namespace OKAssets
 
             _isLoading = false;
             _loadTime = Time.time - _startLoadStamp;
+            OKTimer.Inatance.Remove(this);
         }
 
         public virtual void Dispose()
@@ -181,6 +182,6 @@ namespace OKAssets
             }
         }
 
-        public abstract void Update();
+        public abstract void OnUpdate();
     }
 }

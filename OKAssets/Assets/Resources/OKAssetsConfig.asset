@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72a8fa761c914d019d1e9daf2f690cc9, type: 3}
   m_Name: OKAssetsConfig
   m_EditorClassIdentifier: 
-  loadModel: 0
+  loadModel: 1
   appName: OKAssetsDemo
-  ResFolderName: Bundles
   gameMode: 0
   CDN_DEBUGFOLDER: debug
   CDN_RELEASEFOLDER: release

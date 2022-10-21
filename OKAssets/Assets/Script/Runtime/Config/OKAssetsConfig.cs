@@ -9,8 +9,5 @@ namespace OKAssets
         /// </summary>
         public ResLoadMode loadModel = ResLoadMode.EditorModel;
         public string appName = "OKAssetsDemo";
-        public GameMode gameMode = GameMode.DEBUG;
-        public string CDN_DEBUGFOLDER = "debug";
-        public string CDN_RELEASEFOLDER = "release";
     }
 }

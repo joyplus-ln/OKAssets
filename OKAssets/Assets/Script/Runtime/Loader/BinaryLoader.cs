@@ -201,6 +201,7 @@ namespace OKAssets
 
             _request.SendWebRequest();
             base.Load();
+            OKTimer.Inatance.Add(this);
         }
 
 
@@ -212,9 +213,10 @@ namespace OKAssets
             }
 
             base.Close();
+            
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             if (_request == null)
             {
@@ -264,6 +266,7 @@ namespace OKAssets
             }
 
             base.Dispose();
+           
         }
 
         protected bool IsError()
@@ -271,6 +274,7 @@ namespace OKAssets
             if ((_request.isHttpError || _request.isNetworkError))
             {
                 Debug.Log(_url + "-" + "error ");
+                return true;
             }
 
             return false;

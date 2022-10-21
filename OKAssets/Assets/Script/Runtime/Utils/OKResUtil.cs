@@ -38,6 +38,34 @@ namespace OKAssets
                 _BundlesInfo.Add(newInfo.name, newInfo);
             }
         }
+        
+        internal static void LoadBundlesInfo()
+        {
+            //解析files.txt获取fileInfo
+            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.OnLineModel)
+            {
+                string[] files = File.ReadAllLines(Util.GetBundlesInfoConfigPersistentDataPath());
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string file = files[i];
+                    if (string.IsNullOrEmpty(file))
+                    {
+                        continue;
+                    }
+
+                    BundleInfo bundleInfo = new BundleInfo();
+                    bundleInfo.Parse(file);
+                    if (!OKAsset.GetInstance().StorageBundlesInfo.ContainsKey(bundleInfo.name))
+                    {
+                        OKAsset.GetInstance().StorageBundlesInfo.Add(bundleInfo.name, bundleInfo);
+                    }
+                    else
+                    {
+                        OKAsset.GetInstance().StorageBundlesInfo[bundleInfo.name] = bundleInfo;
+                    }
+                }
+            }
+        }
 
         public void CacheCDNBundleInfo(string cdnFilesURL, Dictionary<string, BundleInfo> bundleInfos,
             OKAsset.OnCompleteDelegate onCompleteDelegate)
@@ -146,25 +174,6 @@ namespace OKAssets
             return null;
         }
 
-
-        public string GetAssetBundlesCdnPath()
-        {
-            string platform = "Windows";
-#if UNITY_IOS
-        platform = "iOS";
-#elif UNITY_ANDROID
-            platform = "Android";
-#endif
-            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
-            {
-                return @$"{CdnUrl}/debug/{Application.version}/{platform}";
-            }
-            else
-            {
-                return @$"{CdnUrl}/release/{Application.version}/{platform}";
-            }
-        }
-
         public static List<BundleInfo> GetCDNBundlesByTags(string tag)
         {
             List<BundleInfo> bundles = new List<BundleInfo>();
@@ -179,36 +188,7 @@ namespace OKAssets
 
             return bundles;
         }
-
-
-        public static Dictionary<string, string> LoadBundlesTable()
-        {
-            Dictionary<string, string> bundleTable = new Dictionary<string, string>();
-            string bundletablepath = Util.DataPath + OKAssetsConst.BundleMapFlieName;
-            //解析bundle和文件的对应表
-            if (OKAssetsConst.okConfig.loadModel == ResLoadMode.EditorModel)
-            {
-#if UNITY_ANDROID
-                bundletablepath = Util.DataPath + $"AssetBundles/Android/{OKAssetsConst.BundleMapFlieName}";
-#elif UNITY_IOS
-					bundletablepath = Util.DataPath + $"AssetBundles/iOS/{OKAssetsConst.BundleMapFlieName}";
-#else
-                bundletablepath = Util.DataPath + $"AssetBundles/Windows/{OKAssetsConst.BundleMapFlieName}";
-#endif
-            }
-
-            string[] files = File.ReadAllLines(bundletablepath);
-            for (int i = 0; i < files.Length; i++)
-            {
-                string file = files[i];
-                string[] fs = file.Split('|');
-                if (string.IsNullOrEmpty(fs[0]))
-                    continue;
-                bundleTable[fs[0]] = fs[1];
-            }
-
-            return bundleTable;
-        }
+        
 
         internal static AssetBundleManifest LoadManifest()
         {
@@ -230,7 +210,7 @@ namespace OKAssets
         {
             string s = "";
             string bundleName = assetBundleName;
-            if (autoCompletionExts)
+            if (autoCompletionExts && !bundleName.Contains(OKAssetsConst.VARIANT))
                 assetBundleName += OKAssetsConst.VARIANT;
 
             BundleInfo bundleInfo = OKResUtil.GetBundleInfo(assetBundleName);
@@ -246,7 +226,7 @@ namespace OKAssets
                 }
                 else if (bundleInfo.location == BundleStorageLocation.CDN)
                 {
-                    s = GetDefaultAssetBundlesCDNPath();
+                    s = CdnUrl;
                 }
 
                 bundleName = bundleInfo.nameWithHash;
@@ -274,29 +254,7 @@ namespace OKAssets
 
             return Util.DataPath;
         }
-
-        internal static string GetDefaultAssetBundlesCDNPath()
-        {
-            if (OKAssetsConst.okConfig.gameMode == GameMode.DEBUG)
-            {
-                return GetFilePath(CdnUrl, OKAssetsConst.okConfig.CDN_DEBUGFOLDER);
-            }
-            else
-            {
-                return GetFilePath(CdnUrl, OKAssetsConst.okConfig.CDN_RELEASEFOLDER);
-            }
-        }
-
-        internal static string GetFilePath(string path, string releaseType)
-        {
-            string platform = "Windows";
-#if UNITY_IOS
-        platform = "iOS";
-#elif UNITY_ANDROID
-            platform = "Android";
-#endif
-            return path + "/" + releaseType + "/" + Application.version + "/" + platform;
-        }
+        
 
         internal static BundleInfo GetBundleInfoFormArray(BundleInfo[] infoArray, string name)
         {
