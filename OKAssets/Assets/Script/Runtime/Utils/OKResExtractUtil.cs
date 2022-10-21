@@ -15,6 +15,7 @@ namespace OKAssets
             //编辑器模式下，直接启动游戏
             if (!Util.IsOnLineModel())
             {
+                complete?.Invoke();
                 return;
             }
 
