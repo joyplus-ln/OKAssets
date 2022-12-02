@@ -437,6 +437,10 @@ namespace OKAssets
             for (int i = 0; i < deps.Length; i++)
             {
                 string dep = deps[i];
+                if (!dep.EndsWith(OKAssetsConst.VARIANT))
+                {
+                    dep += OKAssetsConst.VARIANT;
+                }
                 LoadedAssetBundle depBundle = null;
                 if (loadedAssetBundles.TryGetValue(dep, out depBundle))
                 {
@@ -622,6 +626,7 @@ namespace OKAssets
                 string abName = GetAssetBundleNameByAssetPath(assetPath);
                 if (string.IsNullOrEmpty(abName))
                 {
+                    Debug.LogError($"{abName} is null");
                     return null;
                 }
 
@@ -629,6 +634,7 @@ namespace OKAssets
                 AssetBundle ab = LoadAssetBundle(abName);
                 if (ab == null)
                 {
+                    Debug.LogError($"{abName} is null");
                     return null;
                 }
 
@@ -894,14 +900,14 @@ namespace OKAssets
             });
         }
 
-        public Sprite LoadSpriteInAtlas(string assetPath, string atlasPath, string spriteName)
+        public Sprite LoadSpriteInAtlas(string atlasPath, string spriteName)
         {
             AtlasInfo atlasInfo = LoadAllSpriteInAtlas(atlasPath);
             spriteName = Path.GetFileNameWithoutExtension(spriteName); //spriteName不需要扩展名
             return atlasInfo.GetSprite(spriteName);
         }
 
-        public void LoadSpriteInAtlasAsync(string assetPath, string atlasPath, string spriteName,
+        public void LoadSpriteInAtlasAsync(string atlasPath, string spriteName,
             OnLoadSpriteCompleteDelegate onLoadItemComplete = null)
         {
             LoadAllSpriteInAtlasAsync(atlasPath, delegate(AtlasInfo atlasInfo)
@@ -1147,7 +1153,10 @@ namespace OKAssets
                 return null;
             }
 
-            assetBundleName += OKAssetsConst.VARIANT;
+            if (!assetBundleName.EndsWith(OKAssetsConst.VARIANT))
+            {
+                assetBundleName += OKAssetsConst.VARIANT;
+            }
 
             string[] dependencies = null;
             //判断从依赖缓存中取出依赖列表

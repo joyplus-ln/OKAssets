@@ -19,7 +19,7 @@ namespace OKAssets
         public void Parse(string s)
         {
             string[] fs = s.Split('|');
-            if (fs.Length < 8)
+            if (fs.Length < 7)
             {
                 return;
             }
@@ -49,7 +49,7 @@ namespace OKAssets
             }
 
             List<string> bundleList = new List<string>();
-            if (!string.IsNullOrEmpty(fs[7]))
+            if (fs.Length >= 8 && !string.IsNullOrEmpty(fs[7]))
             {
                 byte[] bytes = Convert.FromBase64String(fs[7]);
                 string[] list = Encoding.Default.GetString(bytes).Split('|');

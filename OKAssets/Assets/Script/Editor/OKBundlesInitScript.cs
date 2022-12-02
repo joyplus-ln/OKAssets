@@ -41,6 +41,13 @@ namespace OKAssets.Editor
             AssetbundleBuildScript.HybridBuildAssetBundles(BuildAssetBundleOptions.DeterministicAssetBundle |
                                                            BuildAssetBundleOptions.ChunkBasedCompression);
         }
+        
+        [MenuItem("OKAssets/ReBuildAssetBundle")]
+        public static void ReBuildBundle()
+        {
+            AssetbundleBuildScript.HybridBuildAssetBundles(BuildAssetBundleOptions.ForceRebuildAssetBundle |
+                                                           BuildAssetBundleOptions.ChunkBasedCompression);
+        }
 
         public static void CreatOkAssetTreeData(bool reCreat = false, OKTreeAsset dataScript = null)
         {

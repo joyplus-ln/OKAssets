@@ -36,7 +36,12 @@ namespace OKAssets
                 //Debug.LogError("tag:" + tag); //tag是SpriteAtlas资源的文件名称
                 // GResManager.GetInstance()
                 //     .LoadAssetAsync(callBack(tag), (asset) => { action(asset as SpriteAtlas); });
-                action(OKAsset.GetInstance().LoadAsset(callBack(tag)) as SpriteAtlas);
+                SpriteAtlas spriteAtlas = OKAsset.GetInstance().LoadAsset(callBack(tag)) as SpriteAtlas;
+                if (spriteAtlas == null)
+                {
+                    Debug.LogError($"atlas not found {tag}");
+                }
+                action(spriteAtlas);
             };
         }
 
